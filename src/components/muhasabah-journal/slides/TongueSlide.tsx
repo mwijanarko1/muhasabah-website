@@ -1,6 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
 import { JournalNotes } from "../JournalNotes";
-import { DoubleBezelRatingCard, RatingCardHeader } from "../rating-ui";
+import {
+  DoubleBezelRatingCard,
+  RatingCardHeader,
+  SliderTriadCaptions,
+  SliderTriadTicks,
+} from "../rating-ui";
 import { SlideShell } from "../SlideShell";
 import type { EntryState } from "../types";
 
@@ -22,7 +27,7 @@ export function TongueSlide({ form, setForm }: Props) {
           description="Gossip, argument, idle talk vs. purposeful, kind, or silent speech."
           trailing={
             <div
-              className={`flex shrink-0 flex-col items-center rounded-2xl px-4 py-3 transition-all duration-300 ${
+              className={`flex min-w-[5.25rem] shrink-0 flex-col items-center justify-center rounded-2xl px-4 py-3 transition-all duration-300 ${
                 form.tongueDistractions < 0
                   ? "bg-rose-50 dark:bg-rose-950/30"
                   : form.tongueDistractions > 0
@@ -31,7 +36,7 @@ export function TongueSlide({ form, setForm }: Props) {
               }`}
             >
               <span
-                className={`text-3xl font-bold transition-colors duration-300 ${
+                className={`inline-block min-w-[3ch] text-center text-3xl font-bold tabular-nums transition-colors duration-300 ${
                   form.tongueDistractions < 0
                     ? "text-rose-500 dark:text-rose-400"
                     : form.tongueDistractions > 0
@@ -42,18 +47,18 @@ export function TongueSlide({ form, setForm }: Props) {
                 {form.tongueDistractions > 0 ? "+" : ""}
                 {form.tongueDistractions}
               </span>
-              <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              <span className="w-full whitespace-nowrap text-center text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 / ±20
               </span>
             </div>
           }
         />
 
-        <div className="mb-3 flex justify-between text-[11px] font-medium uppercase tracking-wider">
-          <span className="text-rose-400 dark:text-rose-500">Regrettable speech</span>
-          <span className="text-gray-400 dark:text-gray-500">Neutral</span>
-          <span className="text-emerald-500 dark:text-emerald-400">Mindful restraint</span>
-        </div>
+        <SliderTriadCaptions
+          left={<span className="text-rose-400 dark:text-rose-500">Regrettable speech</span>}
+          center={<span className="text-gray-400 dark:text-gray-500">Neutral</span>}
+          right={<span className="text-emerald-500 dark:text-emerald-400">Mindful restraint</span>}
+        />
 
         <div className="relative mb-4">
           <div className="absolute top-1/2 h-3 w-full -translate-y-1/2 rounded-full bg-gradient-to-r from-rose-200 via-[#E5ECF4] to-emerald-200 dark:from-rose-900/40 dark:via-gray-700 dark:to-emerald-900/40" />
@@ -120,11 +125,7 @@ export function TongueSlide({ form, setForm }: Props) {
           `}</style>
         </div>
 
-        <div className="flex justify-between text-[10px] font-medium text-gray-400 dark:text-gray-500">
-          <span>-20</span>
-          <span className="text-gray-500 dark:text-gray-400">0</span>
-          <span>+20</span>
-        </div>
+        <SliderTriadTicks left="-20" center="0" right="+20" />
       </DoubleBezelRatingCard>
 
       <JournalNotes

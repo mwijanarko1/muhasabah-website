@@ -1,5 +1,46 @@
 import type { ReactNode } from "react";
 
+const triadCaptionCell =
+  "min-w-0 max-w-full break-words text-balance text-[10px] font-medium uppercase leading-snug tracking-wide sm:text-[11px] sm:leading-tight sm:tracking-wider";
+
+/** Three equal columns for left / center / right labels above a slider (aligns with track thirds). */
+export function SliderTriadCaptions({
+  left,
+  center,
+  right,
+}: {
+  left: ReactNode;
+  center: ReactNode;
+  right: ReactNode;
+}) {
+  return (
+    <div className="mb-3 grid grid-cols-3 items-start gap-x-1 sm:gap-x-2">
+      <span className={`${triadCaptionCell} text-left`}>{left}</span>
+      <span className={`${triadCaptionCell} text-center`}>{center}</span>
+      <span className={`${triadCaptionCell} text-right`}>{right}</span>
+    </div>
+  );
+}
+
+/** Numeric endpoints under a slider; same grid as {@link SliderTriadCaptions} for vertical alignment. */
+export function SliderTriadTicks({
+  left,
+  center,
+  right,
+}: {
+  left: ReactNode;
+  center: ReactNode;
+  right: ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-3 items-baseline gap-x-1 text-[10px] font-medium tabular-nums text-gray-400 sm:gap-x-2 sm:text-[11px] dark:text-gray-500">
+      <span className="text-left">{left}</span>
+      <span className="text-center text-gray-500 dark:text-gray-400">{center}</span>
+      <span className="text-right">{right}</span>
+    </div>
+  );
+}
+
 /** Step 2 (Dhikr) rating shell — reused for journal steps 2–7 */
 export function DoubleBezelRatingCard({ children }: { children: ReactNode }) {
   return (
@@ -34,21 +75,20 @@ export function RatingCardHeader({
         </span>
         <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">{description}</p>
       </div>
-      {trailing}
+      <div className="shrink-0">{trailing}</div>
     </div>
   );
 }
 
 export function RatingScoreNumeric({ value, max }: { value: number; max: number }) {
   return (
-    <div className="flex shrink-0 flex-col items-end pt-0.5">
-      <span
-        className="text-4xl font-semibold text-[#8A4FFF] transition-all duration-300"
-        style={{ fontVariantNumeric: "tabular-nums" }}
-      >
+    <div className="flex min-w-[3.5rem] shrink-0 flex-col items-end pt-0.5">
+      <span className="inline-block w-full min-w-[2ch] text-right text-4xl font-semibold tabular-nums text-[#8A4FFF] transition-all duration-300">
         {value}
       </span>
-      <span className="text-xs font-medium text-gray-400 dark:text-gray-500">/ {max}</span>
+      <span className="w-full text-right text-xs font-medium tabular-nums text-gray-400 dark:text-gray-500">
+        / {max}
+      </span>
     </div>
   );
 }
