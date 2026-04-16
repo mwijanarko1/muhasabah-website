@@ -1,171 +1,133 @@
-# Mikhail Builds Website Template for Beginners
+# Muhasabah — Daily Islamic Accountability Journal
 
-A modern, beginner-friendly Next.js template designed for rapid web development with Cursor IDE integration.
+A Next.js 16 web app for recording daily Islamic muhasabah (self-reflection) scores across 7 accountability categories. Built with Convex for real-time serverless data and Google OAuth for authentication.
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 with App Router
-- **Language**: TypeScript for type safety
+- **Language**: TypeScript
 - **UI Library**: React 19
-- **Styling**: Tailwind CSS v4 with custom animations
+- **Styling**: Tailwind CSS v4
+- **Backend**: Convex (serverless real-time database)
+- **Authentication**: `@convex-dev/auth` with Google OAuth
+- **Testing**: Vitest + React Testing Library
 - **Development**: Turbopack for fast builds
-- **Linting**: ESLint with Next.js configuration
-- **Build Tool**: PostCSS with Autoprefixer
 
 ## Features
 
-- **Modern UI Components**: Pre-built Hero component with animated gradient backgrounds
-- **Responsive Design**: Mobile-first approach with Tailwind CSS
-- **TypeScript Support**: Full type checking and IntelliSense
-- **Custom Animations**: Blob animations and smooth transitions
-- **Developer Experience**: Optimized with Turbopack for lightning-fast development
-- **Cursor IDE Integration**: Designed to work seamlessly with Cursor's AI agent
-- **Authentication Ready**: Clerk integration guide included
-- **Backend Ready**: Convex database integration guide included
+- **Daily Journal**: Record muhasabah entries across 7 categories (score range −20 to 100)
+- **Google OAuth Sign-In**: Simple one-click authentication
+- **Real-Time Sync**: Convex keeps entries in sync across sessions
+- **Responsive Design**: Mobile-first Tailwind CSS layout
+- **Type-Safe**: Full TypeScript coverage
 
 ## Getting Started
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or higher)
-- [Bun](https://bun.sh/) (recommended package manager for this template)
-- [Cursor IDE](https://cursor.sh/) (recommended)
+- [Bun](https://bun.sh/) (recommended package manager)
 
 ### Installation
 
-1. **Download Cursor IDE**
-   - Visit [cursor.sh](https://cursor.sh/) and download the latest version
-
-2. **Clone the repository**
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/mwijanarko1/template.git
-   cd template
+   git clone https://github.com/mwijanarko1/muhasabah-website.git
+   cd muhasabah-website
    ```
 
-3. **Install dependencies**
+2. **Install dependencies**
    ```bash
    bun install
    ```
 
-4. **Start the development server**
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Fill in the following in `.env.local`:
+   - `NEXT_PUBLIC_CONVEX_URL` — your Convex deployment URL (`.convex.cloud`)
+   - `NEXT_PUBLIC_APP_URL` — your site origin for metadata (local: `http://localhost:3000`)
+   - `AUTH_SECRET` — a secure random string for session encryption
+   - `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` — Google OAuth Web client credentials
+   - `SITE_URL` — same origin as the app (no trailing slash); required by Convex Auth for OAuth redirects. Also set these auth-related variables on your Convex deployment (Dashboard → Environment Variables), not only in `.env.local`.
+   - **`JWT_PRIVATE_KEY` and `JWKS`** — required for Convex Auth session tokens. Generate once per deployment with `bun run generate-convex-auth-keys`, then add both lines to your **Convex** deployment env (not necessarily `.env.local`). Do not rotate keys casually; new keys invalidate existing sessions.
+
+   Create the Google OAuth credentials via the [Google Cloud Console](https://console.cloud.google.com/) and register the Convex HTTP callback URL and JavaScript origins per [Convex Auth](https://labs.convex.dev/auth).
+
+4. **Start Convex dev sync** (in a separate terminal)
+   ```bash
+   npx convex dev
+   ```
+
+5. **Start the development server**
    ```bash
    bun run dev
    ```
 
-5. **Open Cursor Composer**
-   - Press `CMD + I` to open the Composer
-   - Make sure to select the "Agent" mode
-
-6. **Use the AI Agent**
-   - Copy the contents of the `docs/PROMPT.txt` file and paste it into the Composer Agent
-   - Let the AI generate your project structure and components
-   - Chat with the agent to build features - it will handle the coding for you
-
-7. **Fix any issues**
-   - If errors occur, copy/paste the error or screenshot it
-   - Ask the agent to fix the specific error
+6. Open [http://localhost:3000](http://localhost:3000) — you’ll see the landing page; use **Do Muhasabah of today** to open `/today` and run the journal flow.
 
 ## Project Structure
 
 ```
-template/
-├── docs/                       # Documentation and guides
-│   ├── PROMPT.txt             # AI agent prompt instructions
-│   ├── CURSOR_GUIDE.md        # Comprehensive Cursor IDE guide
-│   ├── clerk/                 # Clerk authentication guides
-│   │   └── clerk-auth-guide.md
-│   └── convex/                # Convex database guides
-│       ├── convex-db-guide.md
-│       └── convex_rules.mdc
-├── for-agent/                 # Agent-specific instructions
-│   ├── deployment.txt         # Deployment guidelines
-│   ├── guidelines.txt         # General coding guidelines
-│   ├── modes.txt              # Agent modes and instructions
-│   └── ui-guide.txt           # UI/UX guidelines
-├── src/                       # Source code
+muhasabah-website/
+├── convex/                    # Convex backend (serverless functions + schema)
+│   ├── auth.ts               # Google OAuth provider
+│   ├── helpers.ts            # Shared utility functions
+│   ├── http.ts               # Convex HTTP routes (auth add-ons)
+│   ├── muhasabah.ts          # Queries for muhasabah entries
+│   ├── mutations.ts          # Upsert / write mutations
+│   └── schema.ts             # DB schema (userSettings + muhasabahEntries)
+├── src/
 │   ├── app/
-│   │   ├── layout.tsx         # Root layout component
-│   │   ├── page.tsx           # Home page
-│   │   ├── globals.css        # Global styles
-│   │   └── favicon.ico        # App favicon
-│   └── components/
-│       └── Hero.tsx           # Hero section component
-├── tailwind.config.js         # Tailwind CSS configuration
-├── next.config.mjs            # Next.js configuration
-├── postcss.config.mjs         # PostCSS configuration
-├── eslint.config.mjs          # ESLint configuration
-└── package.json               # Dependencies and scripts
+│   │   ├── layout.tsx        # Root layout (ConvexAuthProvider, SEO)
+│   │   ├── page.tsx          # Home / landing + routing
+│   │   ├── today/page.tsx    # Journal (signed-in or anonymous)
+│   │   ├── dashboard/page.tsx
+│   │   ├── privacy/page.tsx
+│   │   └── terms/page.tsx
+│   ├── components/           # React UI (journal, landing, providers)
+│   ├── convex/               # Vitest tests for shared score helpers (not the Convex folder)
+│   └── lib/                  # date keys, local draft, env
+├── docs/
+│   └── CODEBASE_MAP.md       # Architecture inventory and navigation map
+├── .env.example              # Environment variable template
+├── package.json              # Dependencies and scripts
+└── vitest.config.ts          # Test configuration
 ```
 
 ## Documentation
 
-### Codebase Architecture
-For a comprehensive overview of the codebase structure, architecture diagrams, data flows, and navigation guide, see [`docs/CODEBASE_MAP.md`](docs/CODEBASE_MAP.md).
-
-### Cursor IDE Guide
-Check `docs/CURSOR_GUIDE.md` for detailed instructions on using Cursor IDE effectively with this template.
-
-### Authentication (Clerk)
-The `docs/clerk/` directory contains guides for integrating Clerk authentication into your project.
-
-### Backend/Database (Convex)
-The `docs/convex/` directory contains guides for setting up Convex as your backend and database solution.
-
-### Agent Instructions
-The `for-agent/` directory contains instructions that help the AI agent understand how to work with your project:
-- **deployment.txt**: Deployment best practices
-- **guidelines.txt**: General coding standards
-- **modes.txt**: Different agent modes and when to use them
-- **ui-guide.txt**: UI/UX design guidelines
+- **[Codebase Map](docs/CODEBASE_MAP.md)** — Full architecture overview, data flows, and module inventory.
 
 ## Testing
-
-Run the test suite:
 
 ```bash
 bun run test        # Watch mode
 bun run test:run    # Single run
 ```
 
-Tests use Vitest and React Testing Library. Add `*.test.tsx` files next to your components.
-
-## Environment
-
-Copy `.env.example` to `.env.local` and fill in values. Use `getEnv()` from `src/lib/env.ts` for validated access. Extend the Zod schema when adding Clerk, Convex, or other services.
-
-## Customization
-
-### Styling
-- Modify `tailwind.config.js` to add custom colors, fonts, or animations
-- Update `src/app/globals.css` for global styles
-- Components use Tailwind utility classes for easy customization
-
-### Components
-- Add new components in `src/components/`
-- Import and use them in your pages
-- Follow the existing Hero component pattern
+Tests use Vitest and React Testing Library. Add `*.test.tsx` / `*.test.ts` files alongside your source files.
 
 ## Deployment
 
 ### Build for Production
+
 ```bash
 bun run build
 ```
 
 ### Start Production Server
+
 ```bash
 bun run start
 ```
 
-The template is ready to deploy to Vercel, Netlify, or any other hosting platform that supports Next.js.
+Deploy to [Vercel](https://vercel.com), [Netlify](https://netlify.com), or any Next.js-compatible host. Set the same environment variables listed above in your hosting dashboard. Don't forget to deploy the Convex backend first (`npx convex deploy`) and point `NEXT_PUBLIC_CONVEX_URL` to the production URL.
 
 ## Contributing
 
-This template is designed to be extended and customized. Feel free to:
-- Add new components
-- Modify the styling
-- Extend functionality
-- Share your improvements
+Feel free to open issues or submit pull requests for improvements and bug fixes.
 
 ## License
 

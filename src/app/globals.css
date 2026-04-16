@@ -1,7 +1,18 @@
 @import "tailwindcss";
 
-/* Tailwind CSS v4 customizations */
+/* Tailwind CSS v4 customizations — docs/brand-guidelines.json */
 @theme {
+  --color-brand-white: #ffffff;
+  --color-brand-mint: #effffa;
+  --color-brand-alice: #e5ecf4;
+  --color-brand-periwinkle: #c3bef7;
+  --color-brand-accent: #8a4fff;
+  --color-brand-ink: #1f1830;
+
+  --font-display: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-literata), ui-serif, Georgia, serif;
+  --font-mono-brand: var(--font-fragment-mono), ui-monospace, monospace;
+
   --typography-font-size: 1rem;
   --typography-line-height: 1.75;
   --typography-font-weight: 400;
@@ -128,18 +139,18 @@ pre {
   border-radius: 0.5rem;
   background-color: #1e1e1e;
   color: #d4d4d4;
-  font-family: 'Geist Mono', monospace;
+  font-family: var(--font-mono-brand);
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
 code {
-  font-family: 'Geist Mono', monospace;
+  font-family: var(--font-mono-brand);
 }
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid var(--color-brand-accent);
   outline-offset: 2px;
 }
 
@@ -149,8 +160,8 @@ html {
 }
 
 body {
-  font-family: 'Geist', sans-serif;
-  color: #1f2937;
+  font-family: var(--font-body);
+  color: var(--color-brand-ink);
   line-height: 1.5;
 }
 
