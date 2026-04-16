@@ -30,6 +30,12 @@ import { OutroSlide } from "./muhasabah-journal/slides/OutroSlide";
 import { PrayersSlide } from "./muhasabah-journal/slides/PrayersSlide";
 import { TongueSlide } from "./muhasabah-journal/slides/TongueSlide";
 
+/** Horizontal swipe between slides must not run when the user is dragging a range slider. */
+function touchTargetDisablesSwipeNav(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  return target.closest('input[type="range"]') !== null;
+}
+
 export type MuhasabahJournalProps =
   | { variant: "anonymous" }
   | { variant: "signedIn"; settings: Doc<"userSettings"> | null };
@@ -57,6 +63,7 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
 
   const [slideIndex, setSlideIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
+  const swipeGestureSuppressedRef = useRef(false);
   const prevDateKeyRef = useRef(dateKey);
 
   useEffect(() => {
@@ -239,16 +246,35 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
     setSlideIndex((i) => Math.max(0, i - 1));
   };
 
+  const resetSwipeGesture = () => {
+    touchStartX.current = null;
+    swipeGestureSuppressedRef.current = false;
+  };
+
   const onTouchStart = (e: React.TouchEvent) => {
+    if (touchTargetDisablesSwipeNav(e.target)) {
+      swipeGestureSuppressedRef.current = true;
+      touchStartX.current = null;
+      return;
+    }
+    swipeGestureSuppressedRef.current = false;
     touchStartX.current = e.touches[0].clientX;
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
+    if (swipeGestureSuppressedRef.current) {
+      resetSwipeGesture();
+      return;
+    }
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
+    resetSwipeGesture();
     if (dx > 56) goPrev();
     else if (dx < -56) goNext();
+  };
+
+  const onTouchCancel = () => {
+    resetSwipeGesture();
   };
 
   return (
@@ -257,6 +283,7 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
         className="flex min-h-0 flex-1 flex-col overflow-hidden"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchCancel}
       >
         <main
           id="main-content"
