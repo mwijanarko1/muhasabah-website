@@ -30,12 +30,6 @@ import { OutroSlide } from "./muhasabah-journal/slides/OutroSlide";
 import { PrayersSlide } from "./muhasabah-journal/slides/PrayersSlide";
 import { TongueSlide } from "./muhasabah-journal/slides/TongueSlide";
 
-/** Horizontal swipe between slides must not run when the user is dragging a range slider. */
-function touchTargetDisablesSwipeNav(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) return false;
-  return target.closest('input[type="range"]') !== null;
-}
-
 export type MuhasabahJournalProps =
   | { variant: "anonymous" }
   | { variant: "signedIn"; settings: Doc<"userSettings"> | null };
@@ -62,8 +56,6 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
   const [saved, setSaved] = useState(false);
 
   const [slideIndex, setSlideIndex] = useState(0);
-  const touchStartX = useRef<number | null>(null);
-  const swipeGestureSuppressedRef = useRef(false);
   const prevDateKeyRef = useRef(dateKey);
 
   useEffect(() => {
@@ -246,45 +238,9 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
     setSlideIndex((i) => Math.max(0, i - 1));
   };
 
-  const resetSwipeGesture = () => {
-    touchStartX.current = null;
-    swipeGestureSuppressedRef.current = false;
-  };
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (touchTargetDisablesSwipeNav(e.target)) {
-      swipeGestureSuppressedRef.current = true;
-      touchStartX.current = null;
-      return;
-    }
-    swipeGestureSuppressedRef.current = false;
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (swipeGestureSuppressedRef.current) {
-      resetSwipeGesture();
-      return;
-    }
-    if (touchStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    resetSwipeGesture();
-    if (dx > 56) goPrev();
-    else if (dx < -56) goNext();
-  };
-
-  const onTouchCancel = () => {
-    resetSwipeGesture();
-  };
-
   return (
     <div className="flex min-h-dvh flex-col bg-gray-50 dark:bg-gray-900 md:mx-auto md:min-h-screen md:max-w-lg md:shadow-xl">
-      <div
-        className="flex min-h-0 flex-1 flex-col overflow-hidden"
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        onTouchCancel={onTouchCancel}
-      >
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <main
           id="main-content"
           className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-4 pt-[max(0.5rem,env(safe-area-inset-top,0px))]"
