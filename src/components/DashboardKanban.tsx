@@ -100,6 +100,16 @@ function KanbanCard({ card }: { card: CategoryCardModel }) {
         />
       </div>
       <p className="mt-2 text-[10px] font-mono-brand font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{card.maxLabel}</p>
+      {card.note && (
+        <div className="mt-3 border-t border-brand-periwinkle/15 pt-3 dark:border-gray-700">
+          <p className="text-[10px] font-mono-brand font-semibold uppercase tracking-wider text-brand-accent dark:text-brand-periwinkle">
+            Reflection note
+          </p>
+          <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700 dark:text-gray-200">
+            {card.note}
+          </p>
+        </div>
+      )}
     </article>
   );
 }

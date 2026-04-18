@@ -43,6 +43,7 @@ function localDraftToEntry(d: LocalDraftShape): EntryScores {
     learning: d.learning,
     tongueDistractions: d.tongueDistractions,
     heart: d.heart,
+    notes: d.notes,
   };
 }
 
@@ -56,6 +57,7 @@ function rowToEntry(row: MuhasabahEntry): EntryScores {
     learning: row.learning,
     tongueDistractions: row.tongueDistractions,
     heart: row.heart,
+    notes: row.notes,
   };
 }
 

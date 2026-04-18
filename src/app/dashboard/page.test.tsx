@@ -289,4 +289,22 @@ describe("DashboardPage authentication state", () => {
 
     expect(signOut).toHaveBeenCalledTimes(1);
   });
+
+  it("shows notes from the saved dashboard entry", async () => {
+    authState = { isLoading: false, isAuthenticated: true };
+    completedSignedIn = true;
+    const todayKey = getBrowserTodayDateKey();
+    todayRow = {
+      ...localDraft,
+      dateKey: todayKey,
+      notes: { dhikrQuran: "Stayed present during morning recitation." },
+      updatedAt: 1,
+    };
+
+    render(<DashboardPage />);
+
+    expect(
+      await screen.findByText("Stayed present during morning recitation."),
+    ).toBeInTheDocument();
+  });
 });

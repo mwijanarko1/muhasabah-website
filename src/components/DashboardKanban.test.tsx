@@ -130,4 +130,21 @@ describe("DashboardKanban", () => {
     expect(screen.getByLabelText("2026-04-14: no entry")).toBeInTheDocument();
     expect(screen.getByLabelText("2026-04-15: 47 points")).toBeInTheDocument();
   });
+
+  it("shows saved reflection notes on their matching score cards", () => {
+    const cardsWithNote = [
+      { ...cards[0], note: "Fajr was focused, but the afternoon slipped." },
+    ];
+
+    render(
+      <DashboardKanban
+        statStrip={statStrip}
+        cards={cardsWithNote}
+        activityDays={activityDays}
+        hasCompletedToday={true}
+      />,
+    );
+
+    expect(screen.getByText("Fajr was focused, but the afternoon slipped.")).toBeInTheDocument();
+  });
 });

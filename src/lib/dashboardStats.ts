@@ -3,6 +3,7 @@ import {
   normalizePrayerNotYetTime,
   prayerApplicableMaxPoints,
   prayerSum,
+  type NotesFields,
   type PrayerNotYetTime,
 } from "@/lib/muhasabahScoring";
 
@@ -23,6 +24,7 @@ export type EntryScores = {
   learning: number;
   tongueDistractions: number;
   heart: number;
+  notes?: NotesFields;
 };
 
 export type KanbanColumnId = "care" | "steady" | "thrive";
@@ -36,6 +38,7 @@ export type CategoryCardModel = {
   maxLabel: string;
   percent: number;
   column: KanbanColumnId;
+  note?: string;
 };
 
 export type ActivityLevel = 0 | 1 | 2 | 3 | 4;
@@ -85,6 +88,11 @@ function percentTongue(value: number): number {
   return Math.min(100, Math.max(0, ((value + 20) / 40) * 100));
 }
 
+function visibleNote(notes: NotesFields | undefined, key: keyof NotesFields): string | undefined {
+  const value = notes?.[key]?.trim();
+  return value ? value : undefined;
+}
+
 export function buildCategoryCards(entry: EntryScores): CategoryCardModel[] {
   const notYet = normalizePrayerNotYetTime(entry.prayerNotYetTime);
   const prayer = prayerSum(entry.prayers, notYet);
@@ -107,6 +115,7 @@ export function buildCategoryCards(entry: EntryScores): CategoryCardModel[] {
       display: `${entry.dhikrQuran}/10`,
       maxLabel: "out of 10",
       percent: percentUnipolar(entry.dhikrQuran, 10),
+      note: visibleNote(entry.notes, "dhikrQuran"),
     },
     {
       id: "ibadat",
@@ -116,6 +125,7 @@ export function buildCategoryCards(entry: EntryScores): CategoryCardModel[] {
       display: `${entry.ibadat}/10`,
       maxLabel: "out of 10",
       percent: percentUnipolar(entry.ibadat, 10),
+      note: visibleNote(entry.notes, "ibadat"),
     },
     {
       id: "kindness",
@@ -125,6 +135,7 @@ export function buildCategoryCards(entry: EntryScores): CategoryCardModel[] {
       display: `${entry.kindness}/20`,
       maxLabel: "out of 20",
       percent: percentUnipolar(entry.kindness, 20),
+      note: visibleNote(entry.notes, "kindness"),
     },
     {
       id: "learning",
@@ -134,6 +145,7 @@ export function buildCategoryCards(entry: EntryScores): CategoryCardModel[] {
       display: `${entry.learning}/10`,
       maxLabel: "out of 10",
       percent: percentUnipolar(entry.learning, 10),
+      note: visibleNote(entry.notes, "learning"),
     },
     {
       id: "tongue",
@@ -143,6 +155,7 @@ export function buildCategoryCards(entry: EntryScores): CategoryCardModel[] {
       display: entry.tongueDistractions > 0 ? `+${entry.tongueDistractions}` : `${entry.tongueDistractions}`,
       maxLabel: "−20 to +20",
       percent: percentTongue(entry.tongueDistractions),
+      note: visibleNote(entry.notes, "tongue"),
     },
     {
       id: "heart",
@@ -152,6 +165,7 @@ export function buildCategoryCards(entry: EntryScores): CategoryCardModel[] {
       display: `${entry.heart}/20`,
       maxLabel: "out of 20",
       percent: percentUnipolar(entry.heart, 20),
+      note: visibleNote(entry.notes, "heart"),
     },
   ];
 

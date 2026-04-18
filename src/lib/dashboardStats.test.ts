@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildActivityDays,
+  buildCategoryCards,
   buildDashboardStatStrip,
   computeCurrentStreak,
   type EntryScores,
@@ -59,6 +60,21 @@ describe("buildActivityDays", () => {
       total: 100,
       level: 4,
       label: "2026-04-15: 100 points",
+    });
+  });
+});
+
+describe("buildCategoryCards", () => {
+  it("carries reflection notes onto their matching category cards", () => {
+    const cards = buildCategoryCards(
+      entry({
+        dhikrQuran: 8,
+        notes: { dhikrQuran: "Focused recitation after Fajr." },
+      }),
+    );
+
+    expect(cards.find((card) => card.id === "dhikrQuran")).toMatchObject({
+      note: "Focused recitation after Fajr.",
     });
   });
 });
