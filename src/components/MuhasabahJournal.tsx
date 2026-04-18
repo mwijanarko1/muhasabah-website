@@ -19,7 +19,10 @@ import {
   type LocalDraftShape,
 } from "@/lib/muhasabahLocalDraft";
 import type { UserSettings } from "@/lib/muhasabahTypes";
-import { setTransientMuhasabahSession } from "@/lib/transientMuhasabahSession";
+import {
+  getTransientMuhasabahSession,
+  setTransientMuhasabahSession,
+} from "@/lib/transientMuhasabahSession";
 import {
   useMuhasabahDay,
   useMuhasabahMutations,
@@ -39,6 +42,20 @@ import { TongueSlide } from "./muhasabah-journal/slides/TongueSlide";
 export type MuhasabahJournalProps =
   | { variant: "anonymous" }
   | { variant: "signedIn"; settings: UserSettings | null };
+
+function localDraftToEntryState(draft: LocalDraftShape): EntryState {
+  return {
+    prayers: draft.prayers,
+    prayerNotYetTime: normalizePrayerNotYetTime(draft.prayerNotYetTime),
+    dhikrQuran: draft.dhikrQuran,
+    ibadat: draft.ibadat,
+    kindness: draft.kindness,
+    learning: draft.learning,
+    tongueDistractions: draft.tongueDistractions,
+    heart: draft.heart,
+    notes: draft.notes,
+  };
+}
 
 function JournalLoadingScreen() {
   return (
@@ -104,14 +121,12 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
   useEffect(() => {
     if (isSignedIn) return;
     const drafts = loadAllDrafts();
-    const draft = drafts[dateKey];
+    const transientSession = getTransientMuhasabahSession();
+    const draft =
+      drafts[dateKey] ??
+      (transientSession?.dateKey === dateKey ? transientSession.draft : undefined);
     if (draft) {
-      setForm({
-        ...(draft as EntryState),
-        prayerNotYetTime: normalizePrayerNotYetTime(
-          (draft as LocalDraftShape).prayerNotYetTime,
-        ),
-      });
+      setForm(localDraftToEntryState(draft));
     } else {
       setForm(defaultEntry);
     }

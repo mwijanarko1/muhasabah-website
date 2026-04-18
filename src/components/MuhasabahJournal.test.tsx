@@ -13,6 +13,7 @@ import {
 import {
   clearTransientMuhasabahSession,
   getTransientMuhasabahSession,
+  setTransientMuhasabahSession,
 } from "@/lib/transientMuhasabahSession";
 
 const signIn = vi.fn();
@@ -160,6 +161,30 @@ describe("MuhasabahJournal", () => {
     expect(loadAllDrafts()[todayKey]).toBeUndefined();
     expect(screen.getByRole("button", { name: /^continue$/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /continue with google/i })).not.toBeInTheDocument();
+  });
+
+  it("restores temporary anonymous dashboard progress when returning to edit", async () => {
+    const todayKey = getBrowserTodayDateKey();
+    setTransientMuhasabahSession({
+      dateKey: todayKey,
+      draft: {
+        ...localDraft,
+        notes: { dhikrQuran: "Edited from the temporary dashboard." },
+      },
+    });
+
+    render(<MuhasabahJournal variant="anonymous" />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("2/2")).toHaveLength(5);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /^continue$/i }));
+
+    expect(screen.getByLabelText("Dhikr and Quran score")).toHaveValue("8");
+    expect(
+      screen.getByDisplayValue("Edited from the temporary dashboard."),
+    ).toBeInTheDocument();
   });
 
   it("waits for today's signed-in entry before showing editable scores", async () => {
