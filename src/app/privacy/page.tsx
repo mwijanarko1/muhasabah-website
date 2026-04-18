@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SITE_NAME } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Muhasabah",
+  title: "Privacy Policy - Muhasabah",
   description:
     "How Muhasabah collects, uses, and protects your account and journal data.",
+  alternates: {
+    canonical: "/privacy",
+  },
+  openGraph: {
+    title: "Privacy Policy - Muhasabah",
+    description:
+      "How Muhasabah collects, uses, and protects your account and journal data.",
+    url: "/privacy",
+    siteName: SITE_NAME,
+    type: "article",
+  },
 };
 
 export default function PrivacyPage() {
@@ -16,7 +28,7 @@ export default function PrivacyPage() {
       <header className="border-b border-gray-200 bg-white/90 dark:border-gray-700 dark:bg-gray-800/90">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <Link
-            href="/muhasabah"
+            href="/"
             className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
           >
             ← Back to app

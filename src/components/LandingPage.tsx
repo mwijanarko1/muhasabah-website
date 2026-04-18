@@ -29,20 +29,13 @@ export function LandingPage() {
           A minimalist companion for Islamic self-accountability. Track your prayers, conduct, and spiritual growth with clarity.
         </p>
 
-        <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-center">
           <Link
             href="/today"
-            className="font-display group relative inline-flex min-h-[60px] min-w-[240px] items-center justify-center overflow-hidden rounded-2xl bg-brand-accent px-8 py-4 text-lg font-bold text-brand-white shadow-xl shadow-brand-accent/30 transition-all hover:scale-[1.02] hover:shadow-brand-accent/40 active:scale-[0.98]"
+            className="font-display group relative inline-flex min-h-[60px] min-w-[280px] items-center justify-center overflow-hidden rounded-2xl bg-brand-accent px-8 py-4 text-lg font-bold text-brand-white shadow-xl shadow-brand-accent/30 transition-all hover:scale-[1.02] hover:shadow-brand-accent/40 active:scale-[0.98]"
           >
             <span className="relative z-10">Start your reflection</span>
             <div className="absolute inset-0 translate-y-full bg-white/10 transition-transform group-hover:translate-y-0" />
-          </Link>
-          
-          <Link
-            href="/dashboard"
-            className="font-display inline-flex min-h-[60px] min-w-[240px] items-center justify-center rounded-2xl border-2 border-brand-periwinkle/30 bg-brand-white px-8 py-4 text-lg font-bold text-brand-ink shadow-sm transition-all hover:border-brand-periwinkle/60 hover:shadow-md active:scale-[0.98] dark:bg-gray-900 dark:text-brand-white"
-          >
-            View dashboard
           </Link>
         </div>
 
@@ -52,6 +45,23 @@ export function LandingPage() {
           <div className="h-px w-12 bg-brand-ink dark:bg-brand-white" />
         </div>
       </main>
+
+      <footer className="relative z-10 mt-8">
+        <nav
+          aria-label="Public pages"
+          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-bold text-brand-accent dark:text-brand-periwinkle"
+        >
+          <Link href="/privacy" className="underline-offset-4 hover:underline">
+            Privacy
+          </Link>
+          <Link href="/terms" className="underline-offset-4 hover:underline">
+            Terms
+          </Link>
+          <Link href="/llms.txt" className="underline-offset-4 hover:underline">
+            LLMs
+          </Link>
+        </nav>
+      </footer>
     </div>
   );
 }

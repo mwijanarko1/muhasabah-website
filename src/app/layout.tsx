@@ -2,6 +2,14 @@ import type { Metadata, Viewport } from "next";
 import { Fragment_Mono, Literata, Syne } from "next/font/google";
 import "./globals.css";
 import { FirebaseAuthProvider } from "@/components/FirebaseAuthProvider";
+import {
+  buildWebApplicationJsonLd,
+  getSiteUrl,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_TITLE,
+} from "@/lib/seo";
 
 const fontDisplay = Syne({
   variable: "--font-syne",
@@ -28,28 +36,32 @@ export const viewport: Viewport = {
   ],
 };
 
-// Define metadata for better SEO
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
-  title: "Muhasabah — Daily Self-Accountability Journal",
-  description:
-    "Track your daily spiritual accounting: prayers, dhikr, worship, kindness, learning, and heart presence.",
-  keywords: ["Muhasabah", "Islamic", "Journal", "Self-Accountability", "Prayers"],
-  authors: [{ name: "Created with Cursor Agent" }],
-  creator: "Muhasabah",
-  publisher: "Muhasabah",
+  metadataBase: new URL(getSiteUrl()),
+  applicationName: SITE_NAME,
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  alternates: {
+    canonical: "/",
+    types: {
+      "text/plain": "/llms.txt",
+    },
+  },
   openGraph: {
-    title: "Muhasabah — Daily Self-Accountability Journal",
-    description:
-      "Track your daily spiritual accounting: prayers, dhikr, worship, kindness, learning, and heart presence.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     url: "/",
-    siteName: "Muhasabah",
+    siteName: SITE_NAME,
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Muhasabah",
+        alt: SITE_NAME,
       },
     ],
     locale: "en_US",
@@ -57,9 +69,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Muhasabah — Daily Self-Accountability Journal",
-    description:
-      "Track your daily spiritual accounting: prayers, dhikr, worship, kindness, learning, and heart presence.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     images: ["/og-image.png"],
   },
   robots: {
@@ -73,11 +84,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const webApplicationJsonLd = buildWebApplicationJsonLd();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${fontDisplay.variable} ${fontBody.variable} ${fontMono.variable} ${fontBody.className} antialiased bg-brand-white text-brand-ink dark:bg-[#1a1423] dark:text-brand-mint`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webApplicationJsonLd) }}
+        />
         <a
           href="#main-content"
           className="absolute -top-12 left-4 z-50 rounded-md bg-brand-accent px-4 py-2 text-white transition-[top] duration-200 focus:top-4 focus:outline-none focus:ring-2 focus:ring-brand-periwinkle focus:ring-offset-2 focus:ring-offset-brand-mint dark:focus:ring-offset-[#1a1423]"

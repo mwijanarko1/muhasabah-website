@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SITE_NAME } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Terms of Use (Muhasabah)",
+  title: "Terms of Use - Muhasabah",
   description: "Terms governing use of the Muhasabah journal application.",
+  alternates: {
+    canonical: "/terms",
+  },
+  openGraph: {
+    title: "Terms of Use - Muhasabah",
+    description: "Terms governing use of the Muhasabah journal application.",
+    url: "/terms",
+    siteName: SITE_NAME,
+    type: "article",
+  },
 };
 
 export default function TermsPage() {
@@ -13,7 +24,7 @@ export default function TermsPage() {
       <header className="border-b border-gray-200 bg-white/90 dark:border-gray-700 dark:bg-gray-800/90">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <Link
-            href="/muhasabah"
+            href="/"
             className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
           >
             ← Back to app

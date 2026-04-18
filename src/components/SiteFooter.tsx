@@ -30,6 +30,14 @@ export function SiteFooter() {
             </Link>
           </li>
           <li>
+            <Link
+              href="/llms.txt"
+              className="font-bold text-brand-accent underline-offset-4 hover:underline dark:text-brand-periwinkle"
+            >
+              LLMs
+            </Link>
+          </li>
+          <li>
             <a
               href={contactHref}
               className="font-bold text-brand-accent underline-offset-4 hover:underline dark:text-brand-periwinkle"
