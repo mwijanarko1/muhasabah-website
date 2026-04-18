@@ -1,7 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MuhasabahJournal } from "./MuhasabahJournal";
 import { getBrowserTodayDateKey } from "@/lib/todayDateKey";
+import type { MuhasabahEntry } from "@/lib/muhasabahTypes";
 import {
   isLocalSessionCompleteForDate,
   loadAllDrafts,
@@ -21,6 +22,7 @@ const markSessionComplete = vi.fn();
 const push = vi.fn();
 let authToken: string | null = null;
 let authState = { isLoading: false, isAuthenticated: false };
+let syncedDay: MuhasabahEntry | null | undefined = null;
 
 const localDraft: LocalDraftShape = {
   prayers: { fajr: 2, dhuhr: 2, asr: 2, maghrib: 2, isha: 2 },
@@ -66,7 +68,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/lib/useMuhasabahFirebase", () => ({
-  useMuhasabahDay: () => null,
+  useMuhasabahDay: () => syncedDay,
   useMuhasabahMutations: () => ({
     markSessionComplete,
     upsertDay,
@@ -87,6 +89,7 @@ describe("MuhasabahJournal", () => {
     clearTransientMuhasabahSession();
     authToken = null;
     authState = { isLoading: false, isAuthenticated: false };
+    syncedDay = null;
   });
 
   it("opens an ephemeral dashboard after anonymous completion without saving local completion", () => {
@@ -157,5 +160,57 @@ describe("MuhasabahJournal", () => {
     expect(loadAllDrafts()[todayKey]).toBeUndefined();
     expect(screen.getByRole("button", { name: /^continue$/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /continue with google/i })).not.toBeInTheDocument();
+  });
+
+  it("waits for today's signed-in entry before showing editable scores", async () => {
+    const todayKey = getBrowserTodayDateKey();
+    authState = { isLoading: false, isAuthenticated: true };
+    syncedDay = undefined;
+
+    const { rerender } = render(
+      <MuhasabahJournal
+        variant="signedIn"
+        settings={{ ianaTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone, updatedAt: 1 }}
+      />,
+    );
+
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    expect(screen.queryByText("Missed")).not.toBeInTheDocument();
+
+    syncedDay = {
+      dateKey: todayKey,
+      prayers: { fajr: 2, dhuhr: 2, asr: 2, maghrib: 2, isha: 2 },
+      prayerNotYetTime: {
+        fajr: false,
+        dhuhr: false,
+        asr: false,
+        maghrib: false,
+        isha: false,
+      },
+      dhikrQuran: localDraft.dhikrQuran,
+      ibadat: localDraft.ibadat,
+      kindness: localDraft.kindness,
+      learning: localDraft.learning,
+      tongueDistractions: localDraft.tongueDistractions,
+      heart: localDraft.heart,
+      notes: { dhikrQuran: "Steady morning recitation." },
+      updatedAt: 1,
+    };
+
+    rerender(
+      <MuhasabahJournal
+        variant="signedIn"
+        settings={{ ianaTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone, updatedAt: 1 }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText("2/2")).toHaveLength(5);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    expect(screen.getByLabelText("Dhikr and Quran score")).toHaveValue("8");
+    expect(screen.getByDisplayValue("Steady morning recitation.")).toBeInTheDocument();
   });
 });

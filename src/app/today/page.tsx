@@ -82,10 +82,10 @@ function TodayPageInner() {
       if (settings === undefined) return <LoadingScreen />;
       return <MuhasabahJournal variant="signedIn" settings={settings} />;
     }
-    // Edit mode: render journal immediately without waiting for queries to settle.
-    // This prevents an unmount/remount cycle (via LoadingScreen) that would reset the
-    // slide position and briefly show the anonymous OutroSlide to signed-in users.
-    return <MuhasabahJournal variant="signedIn" settings={settings ?? null} />;
+    // Edit mode still needs settings first so the journal queries the same date key
+    // that was used when today's reflection was saved.
+    if (settings === undefined) return <LoadingScreen />;
+    return <MuhasabahJournal variant="signedIn" settings={settings} />;
   }
 
   return <MuhasabahJournal variant="anonymous" />;

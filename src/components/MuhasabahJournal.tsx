@@ -40,6 +40,17 @@ export type MuhasabahJournalProps =
   | { variant: "anonymous" }
   | { variant: "signedIn"; settings: UserSettings | null };
 
+function JournalLoadingScreen() {
+  return (
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-brand-white px-5 text-center dark:bg-gray-950 md:mx-auto md:min-h-screen md:max-w-lg md:shadow-2xl">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-accent border-t-transparent shadow-sm" />
+      <p className="mt-4 font-display font-medium text-brand-ink dark:text-brand-mint">
+        Loading…
+      </p>
+    </div>
+  );
+}
+
 export function MuhasabahJournal(props: MuhasabahJournalProps) {
   const { authToken, isAuthenticated, signInWithGoogle } = useFirebaseAuth();
   const canUseCloudAuth = props.variant === "signedIn" || isAuthenticated;
@@ -260,6 +271,10 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
   const goPrev = () => {
     setSlideIndex((i) => Math.max(0, i - 1));
   };
+
+  if (canUseCloudAuth && entry === undefined) {
+    return <JournalLoadingScreen />;
+  }
 
   return (
     <div className="flex min-h-dvh flex-col bg-brand-white dark:bg-gray-950 md:mx-auto md:min-h-screen md:max-w-lg md:shadow-2xl">

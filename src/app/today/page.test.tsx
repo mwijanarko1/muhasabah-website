@@ -9,6 +9,7 @@ const replace = vi.fn();
 let authState = { isLoading: false, isAuthenticated: true, authToken: "firebase-id-token" };
 let completedSignedIn: boolean | undefined = false;
 let settings: unknown = null;
+let searchParams = new URLSearchParams();
 
 function createMemoryStorage(): Storage {
   let store = new Map<string, string>();
@@ -32,7 +33,7 @@ function createMemoryStorage(): Storage {
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchParams,
 }));
 
 vi.mock("@/components/FirebaseAuthProvider", () => ({
@@ -60,6 +61,7 @@ describe("TodayPage authentication flow", () => {
     authState = { isLoading: false, isAuthenticated: true, authToken: "firebase-id-token" };
     completedSignedIn = false;
     settings = null;
+    searchParams = new URLSearchParams();
   });
 
   it("sends signed-in users with a completed local anonymous session to the dashboard for import", async () => {
@@ -72,5 +74,23 @@ describe("TodayPage authentication flow", () => {
     });
 
     expect(screen.queryByText("Journal")).not.toBeInTheDocument();
+  });
+
+  it("waits for signed-in settings before rendering edit mode", async () => {
+    searchParams = new URLSearchParams("edit=1");
+    settings = undefined;
+
+    const { rerender } = render(<TodayPage />);
+
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    expect(screen.queryByText("Journal")).not.toBeInTheDocument();
+
+    settings = { ianaTimezone: "Europe/London", updatedAt: 1 };
+
+    rerender(<TodayPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Journal")).toBeInTheDocument();
+    });
   });
 });
