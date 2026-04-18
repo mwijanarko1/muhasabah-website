@@ -2,23 +2,29 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { api } from "../../convex/_generated/api";
-import { Doc } from "../../convex/_generated/dataModel";
 import {
   computeTotal,
   normalizePrayerNotYetTime,
   prayerApplicableMaxPoints,
   prayerSum,
-} from "../../convex/helpers";
+} from "@/lib/muhasabahScoring";
 import { dateKeyInTimeZone } from "@/lib/dateKey";
+import { useFirebaseAuth } from "@/components/FirebaseAuthProvider";
 import {
+  isLocalSessionCompleteForDate,
   loadAllDrafts,
+  resetLocalSessionForDate,
   saveDraftForDateKey,
   setLocalSessionCompleteForDate,
   type LocalDraftShape,
 } from "@/lib/muhasabahLocalDraft";
+import type { UserSettings } from "@/lib/muhasabahTypes";
+import { setTransientMuhasabahSession } from "@/lib/transientMuhasabahSession";
+import {
+  useMuhasabahDay,
+  useMuhasabahMutations,
+  useUserSettings,
+} from "@/lib/useMuhasabahFirebase";
 import { defaultEntry, OUTRO_SLIDE } from "./muhasabah-journal/constants";
 import type { EntryState, PrayerScores } from "./muhasabah-journal/types";
 import { DhikrSlide } from "./muhasabah-journal/slides/DhikrSlide";
@@ -32,34 +38,40 @@ import { TongueSlide } from "./muhasabah-journal/slides/TongueSlide";
 
 export type MuhasabahJournalProps =
   | { variant: "anonymous" }
-  | { variant: "signedIn"; settings: Doc<"userSettings"> | null };
+  | { variant: "signedIn"; settings: UserSettings | null };
 
 export function MuhasabahJournal(props: MuhasabahJournalProps) {
-  const isSignedIn = props.variant === "signedIn";
-  const settings = isSignedIn ? props.settings : null;
+  const { authToken, isAuthenticated, signInWithGoogle } = useFirebaseAuth();
+  const canUseCloudAuth = props.variant === "signedIn" || isAuthenticated;
+  /** Keep the UI signed-in while Firebase finishes confirming a locally stored auth token. */
+  const isSignedIn = canUseCloudAuth || authToken !== null;
+
+  const settingsFromQuery = useUserSettings(isAuthenticated && props.variant === "anonymous");
+
+  const settings =
+    props.variant === "signedIn" ? props.settings : settingsFromQuery ?? null;
 
   const router = useRouter();
-  const { signIn } = useAuthActions();
+  const { markSessionComplete, upsertDay, upsertUserSettings } = useMuhasabahMutations();
   const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const effectiveTimeZone = settings?.ianaTimezone ?? browserTimeZone;
 
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const dateKey = dateKeyInTimeZone(selectedDate, effectiveTimeZone);
 
-  const entry = useQuery(api.muhasabah.getDay, isSignedIn ? { dateKey } : "skip");
-  const upsertDay = useMutation(api.mutations.upsertDay);
-  const upsertUserSettings = useMutation(api.mutations.upsertUserSettings);
-  const markSessionComplete = useMutation(api.mutations.markSessionComplete);
+  const entry = useMuhasabahDay(dateKey, canUseCloudAuth);
 
   const [form, setForm] = useState<EntryState>(defaultEntry);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const [slideIndex, setSlideIndex] = useState(0);
+  const [slideIndex, setSlideIndex] = useState(() =>
+    !isSignedIn && isLocalSessionCompleteForDate(dateKey) ? OUTRO_SLIDE : 0,
+  );
   const prevDateKeyRef = useRef(dateKey);
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!canUseCloudAuth || entry === undefined) return;
     if (entry) {
       setForm({
         prayers: entry.prayers,
@@ -76,7 +88,7 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
       setForm(defaultEntry);
     }
     setSaved(false);
-  }, [isSignedIn, entry, dateKey]);
+  }, [canUseCloudAuth, entry, dateKey]);
 
   useEffect(() => {
     if (isSignedIn) return;
@@ -98,8 +110,8 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
   useEffect(() => {
     if (prevDateKeyRef.current === dateKey) return;
     prevDateKeyRef.current = dateKey;
-    setSlideIndex(0);
-  }, [dateKey]);
+    setSlideIndex(!isSignedIn && isLocalSessionCompleteForDate(dateKey) ? OUTRO_SLIDE : 0);
+  }, [dateKey, isSignedIn]);
 
   useEffect(() => {
     if (isSignedIn) return;
@@ -110,7 +122,7 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
   }, [isSignedIn, dateKey, form]);
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!canUseCloudAuth) return;
     const tz = browserTimeZone;
     if (!settings) {
       void upsertUserSettings({ ianaTimezone: tz });
@@ -119,7 +131,7 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
     if (settings.ianaTimezone !== tz) {
       void upsertUserSettings({ ianaTimezone: tz });
     }
-  }, [isSignedIn, settings, upsertUserSettings, browserTimeZone]);
+  }, [canUseCloudAuth, settings, upsertUserSettings, browserTimeZone]);
 
   const prayerNotYetNorm = normalizePrayerNotYetTime(form.prayerNotYetTime);
 
@@ -138,7 +150,7 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
   const prayerMax = prayerApplicableMaxPoints(prayerNotYetNorm);
 
   const handleSave = useCallback(async () => {
-    if (!isSignedIn) return;
+    if (!canUseCloudAuth) return;
     setSaving(true);
     try {
       await upsertDay({
@@ -166,10 +178,10 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
     } finally {
       setSaving(false);
     }
-  }, [isSignedIn, dateKey, form, upsertDay, prayerNotYetNorm]);
+  }, [canUseCloudAuth, dateKey, form, upsertDay, prayerNotYetNorm]);
 
   const saveAndCompleteSignedIn = useCallback(async () => {
-    if (!isSignedIn) return;
+    if (!canUseCloudAuth) return;
     setSaving(true);
     try {
       await upsertDay({
@@ -197,19 +209,26 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
     } finally {
       setSaving(false);
     }
-  }, [isSignedIn, dateKey, form, upsertDay, markSessionComplete, router, prayerNotYetNorm]);
-
-  const finishAnonymousLocal = useCallback(() => {
-    saveDraftForDateKey(dateKey, form as LocalDraftShape);
-    setLocalSessionCompleteForDate(dateKey);
-    router.push("/dashboard");
-  }, [dateKey, form, router]);
+  }, [canUseCloudAuth, dateKey, form, upsertDay, markSessionComplete, router, prayerNotYetNorm]);
 
   const signInAfterAnonymousCompletion = useCallback(() => {
     saveDraftForDateKey(dateKey, form as LocalDraftShape);
     setLocalSessionCompleteForDate(dateKey);
-    void signIn("google", { redirectTo: "/dashboard" });
-  }, [dateKey, form, signIn]);
+    void signInWithGoogle("/dashboard");
+  }, [dateKey, form, signInWithGoogle]);
+
+  const startLocalSessionOver = useCallback(() => {
+    resetLocalSessionForDate(dateKey);
+    setForm(defaultEntry);
+    setSaved(false);
+    setSlideIndex(0);
+  }, [dateKey]);
+
+  const finishAnonymousToDashboard = useCallback(() => {
+    setTransientMuhasabahSession({ dateKey, draft: form as LocalDraftShape });
+    resetLocalSessionForDate(dateKey);
+    router.push("/dashboard");
+  }, [dateKey, form, router]);
 
   const updatePrayer = (name: keyof PrayerScores, value: number) => {
     setForm((prev) => ({
@@ -231,6 +250,10 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
   };
 
   const goNext = () => {
+    if (!isSignedIn && slideIndex >= OUTRO_SLIDE - 1) {
+      finishAnonymousToDashboard();
+      return;
+    }
     setSlideIndex((i) => (i >= OUTRO_SLIDE ? i : i + 1));
   };
 
@@ -239,11 +262,11 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-gray-50 dark:bg-gray-900 md:mx-auto md:min-h-screen md:max-w-lg md:shadow-xl">
+    <div className="flex min-h-dvh flex-col bg-brand-white dark:bg-gray-950 md:mx-auto md:min-h-screen md:max-w-lg md:shadow-2xl">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <main
           id="main-content"
-          className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-4 pt-[max(0.5rem,env(safe-area-inset-top,0px))]"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-6 pt-[max(1rem,env(safe-area-inset-top,0px))]"
         >
           {slideIndex === 0 && (
             <PrayersSlide
@@ -272,12 +295,13 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
               prayerTotal={prayerTotal}
               prayerMax={prayerMax}
               isSignedIn={isSignedIn}
+              isAuthReady={canUseCloudAuth}
               saving={saving}
               saved={saved}
               onSignInAfterAnonymousCompletion={signInAfterAnonymousCompletion}
-              onFinishAnonymousLocal={finishAnonymousLocal}
               onSaveAndCompleteSignedIn={saveAndCompleteSignedIn}
               onSaveOnly={handleSave}
+              onStartOver={startLocalSessionOver}
             />
           )}
         </main>
@@ -285,21 +309,21 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
 
       {slideIndex < OUTRO_SLIDE && (
         <nav
-          className="shrink-0 border-t border-gray-200 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 dark:border-gray-700 dark:bg-gray-800/95"
+          className="shrink-0 border-t-2 border-brand-periwinkle/10 bg-brand-white/80 backdrop-blur-md px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 dark:bg-gray-900/80"
           aria-label={
             slideIndex >= 1 ? "Move between journal steps" : "Continue to next step"
           }
         >
           <div
             className={
-              slideIndex >= 1 ? "flex min-h-[52px] gap-3" : "flex min-h-[52px]"
+              slideIndex >= 1 ? "flex min-h-[56px] gap-4" : "flex min-h-[56px]"
             }
           >
             {slideIndex >= 1 && (
               <button
                 type="button"
                 onClick={goPrev}
-                className="min-h-[52px] min-w-[5.5rem] shrink-0 rounded-2xl border-2 border-gray-300 bg-white text-base font-semibold text-gray-800 active:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:active:bg-gray-700"
+                className="min-h-[56px] min-w-[6.5rem] shrink-0 rounded-2xl border-2 border-brand-periwinkle/30 bg-brand-white text-base font-display font-bold text-brand-ink shadow-sm active:scale-95 transition-all dark:bg-gray-800 dark:text-brand-white"
               >
                 Back
               </button>
@@ -307,7 +331,7 @@ export function MuhasabahJournal(props: MuhasabahJournalProps) {
             <button
               type="button"
               onClick={goNext}
-              className={`min-h-[52px] rounded-2xl bg-indigo-600 text-base font-semibold text-white active:bg-indigo-700 ${
+              className={`min-h-[56px] rounded-2xl bg-brand-accent text-base font-display font-bold text-white shadow-lg shadow-brand-accent/25 active:scale-95 transition-all hover:scale-[1.02] ${
                 slideIndex >= 1 ? "min-w-0 flex-1" : "w-full"
               }`}
             >

@@ -2,18 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useConvexAuth, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
 import { LandingPage } from "@/components/LandingPage";
+import { useFirebaseAuth } from "@/components/FirebaseAuthProvider";
 import { getBrowserTodayDateKey } from "@/lib/todayDateKey";
-import { isLocalSessionCompleteForDate } from "@/lib/muhasabahLocalDraft";
+import { useCompletedSession } from "@/lib/useMuhasabahFirebase";
 
 function LoadingScreen() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-brand-mint dark:bg-[#1a1423]">
+    <div className="flex min-h-screen items-center justify-center bg-brand-white dark:bg-gray-950">
       <div className="text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-brand-accent border-t-transparent" />
-        <p className="mt-4 text-brand-ink/80 dark:text-brand-mint/80">Loading...</p>
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-brand-accent border-t-transparent shadow-sm"></div>
+        <p className="mt-4 font-display font-medium text-brand-ink dark:text-brand-mint">Loading...</p>
       </div>
     </div>
   );
@@ -21,16 +20,16 @@ function LoadingScreen() {
 
 export default function HomePage() {
   const router = useRouter();
-  const { isLoading, isAuthenticated } = useConvexAuth();
+  const { isLoading, isAuthenticated } = useFirebaseAuth();
   const [todayKey, setTodayKey] = useState<string | null>(null);
 
   useEffect(() => {
     setTodayKey(getBrowserTodayDateKey());
   }, []);
 
-  const completedSignedIn = useQuery(
-    api.muhasabah.hasCompletedSessionForDate,
-    isLoading || !isAuthenticated || !todayKey ? "skip" : { dateKey: todayKey },
+  const completedSignedIn = useCompletedSession(
+    todayKey,
+    !isLoading && isAuthenticated && todayKey !== null,
   );
 
   useEffect(() => {
@@ -41,11 +40,6 @@ export default function HomePage() {
       if (completedSignedIn) {
         router.replace("/dashboard");
       }
-      return;
-    }
-
-    if (isLocalSessionCompleteForDate(todayKey)) {
-      router.replace("/dashboard");
     }
   }, [todayKey, isLoading, isAuthenticated, completedSignedIn, router]);
 
@@ -57,10 +51,6 @@ export default function HomePage() {
     if (completedSignedIn === undefined) return <LoadingScreen />;
     if (completedSignedIn) return <LoadingScreen />;
     return <LandingPage />;
-  }
-
-  if (isLocalSessionCompleteForDate(todayKey)) {
-    return <LoadingScreen />;
   }
 
   return <LandingPage />;

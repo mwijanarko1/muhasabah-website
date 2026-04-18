@@ -1,6 +1,6 @@
 # Muhasabah — Daily Islamic Accountability Journal
 
-A Next.js 16 web app for recording daily Islamic muhasabah (self-reflection) scores across 7 accountability categories. Built with Convex for real-time serverless data and Google OAuth for authentication.
+A Next.js 16 web app for recording daily Islamic muhasabah (self-reflection) scores across 7 accountability categories. Built with Firebase Authentication and Firestore for signed-in sync.
 
 ## Tech Stack
 
@@ -8,8 +8,8 @@ A Next.js 16 web app for recording daily Islamic muhasabah (self-reflection) sco
 - **Language**: TypeScript
 - **UI Library**: React 19
 - **Styling**: Tailwind CSS v4
-- **Backend**: Convex (serverless real-time database)
-- **Authentication**: `@convex-dev/auth` with Google OAuth
+- **Backend**: Next.js API routes with Firebase Admin + Firestore
+- **Authentication**: Firebase Authentication with Google sign-in
 - **Testing**: Vitest + React Testing Library
 - **Development**: Turbopack for fast builds
 
@@ -17,7 +17,7 @@ A Next.js 16 web app for recording daily Islamic muhasabah (self-reflection) sco
 
 - **Daily Journal**: Record muhasabah entries across 7 categories (score range −20 to 100)
 - **Google OAuth Sign-In**: Simple one-click authentication
-- **Real-Time Sync**: Convex keeps entries in sync across sessions
+- **Cloud Sync**: Firestore stores signed-in entries across sessions
 - **Responsive Design**: Mobile-first Tailwind CSS layout
 - **Type-Safe**: Full TypeScript coverage
 
@@ -46,49 +46,36 @@ A Next.js 16 web app for recording daily Islamic muhasabah (self-reflection) sco
    cp .env.example .env.local
    ```
    Fill in the following in `.env.local`:
-   - `NEXT_PUBLIC_CONVEX_URL` — your Convex deployment URL (`.convex.cloud`)
    - `NEXT_PUBLIC_APP_URL` — your site origin for metadata (local: `http://localhost:3000`)
-   - `AUTH_SECRET` — a secure random string for session encryption
-   - `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` — Google OAuth Web client credentials
-   - `SITE_URL` — same origin as the app (no trailing slash); required by Convex Auth for OAuth redirects. Also set these auth-related variables on your Convex deployment (Dashboard → Environment Variables), not only in `.env.local`.
-   - **`JWT_PRIVATE_KEY` and `JWKS`** — required for Convex Auth session tokens. Generate once per deployment with `bun run generate-convex-auth-keys`, then add both lines to your **Convex** deployment env (not necessarily `.env.local`). Do not rotate keys casually; new keys invalidate existing sessions.
+   - `NEXT_PUBLIC_FIREBASE_*` — Firebase web app config for browser auth and analytics
+   - `FIREBASE_PROJECT_ID` — Firebase project ID (`muhasabah-c2776`)
+   - `FIREBASE_CLIENT_EMAIL` — service account client email for Firebase Admin
+   - `FIREBASE_PRIVATE_KEY` — service account private key, with newlines escaped as `\n`
 
-   Create the Google OAuth credentials via the [Google Cloud Console](https://console.cloud.google.com/) and register the Convex HTTP callback URL and JavaScript origins per [Convex Auth](https://labs.convex.dev/auth).
+   Enable Google as a Firebase Authentication provider and add your app origin to the authorized domains in the Firebase console.
 
-4. **Start Convex dev sync** (in a separate terminal)
-   ```bash
-   npx convex dev
-   ```
-
-5. **Start the development server**
+4. **Start the development server**
    ```bash
    bun run dev
    ```
 
-6. Open [http://localhost:3000](http://localhost:3000) — you’ll see the landing page; use **Do Muhasabah of today** to open `/today` and run the journal flow.
+5. Open [http://localhost:3000](http://localhost:3000) — you’ll see the landing page; use **Do Muhasabah of today** to open `/today` and run the journal flow.
 
 ## Project Structure
 
 ```
 muhasabah-website/
-├── convex/                    # Convex backend (serverless functions + schema)
-│   ├── auth.ts               # Google OAuth provider
-│   ├── helpers.ts            # Shared utility functions
-│   ├── http.ts               # Convex HTTP routes (auth add-ons)
-│   ├── muhasabah.ts          # Queries for muhasabah entries
-│   ├── mutations.ts          # Upsert / write mutations
-│   └── schema.ts             # DB schema (userSettings + muhasabahEntries)
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx        # Root layout (ConvexAuthProvider, SEO)
+│   │   ├── api/muhasabah/    # Firebase-backed journal API routes
+│   │   ├── layout.tsx        # Root layout (FirebaseAuthProvider, SEO)
 │   │   ├── page.tsx          # Home / landing + routing
 │   │   ├── today/page.tsx    # Journal (signed-in or anonymous)
 │   │   ├── dashboard/page.tsx
 │   │   ├── privacy/page.tsx
 │   │   └── terms/page.tsx
 │   ├── components/           # React UI (journal, landing, providers)
-│   ├── convex/               # Vitest tests for shared score helpers (not the Convex folder)
-│   └── lib/                  # date keys, local draft, env
+│   └── lib/                  # Firebase, scoring, date keys, local draft, env
 ├── docs/
 │   └── CODEBASE_MAP.md       # Architecture inventory and navigation map
 ├── .env.example              # Environment variable template
@@ -123,7 +110,7 @@ bun run build
 bun run start
 ```
 
-Deploy to [Vercel](https://vercel.com), [Netlify](https://netlify.com), or any Next.js-compatible host. Set the same environment variables listed above in your hosting dashboard. Don't forget to deploy the Convex backend first (`npx convex deploy`) and point `NEXT_PUBLIC_CONVEX_URL` to the production URL.
+Deploy to [Vercel](https://vercel.com), [Netlify](https://netlify.com), or any Next.js-compatible host. Set the same Firebase Admin environment variables listed above in your hosting dashboard.
 
 ## Contributing
 

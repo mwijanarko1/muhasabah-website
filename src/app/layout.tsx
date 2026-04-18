@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fragment_Mono, Literata, Syne } from "next/font/google";
 import "./globals.css";
-import { ConvexClientProvider } from "@/components/ConvexClientProvider";
+import { FirebaseAuthProvider } from "@/components/FirebaseAuthProvider";
 
 const fontDisplay = Syne({
   variable: "--font-syne",
@@ -84,9 +84,9 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <ConvexClientProvider>
+        <FirebaseAuthProvider>
           {children}
-        </ConvexClientProvider>
+        </FirebaseAuthProvider>
       </body>
     </html>
   );

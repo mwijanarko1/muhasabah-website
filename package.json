@@ -8,15 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest",
-    "test:run": "vitest run",
-    "generate-convex-auth-keys": "node scripts/generate-convex-auth-keys.mjs"
+    "test:run": "vitest run"
   },
   "dependencies": {
-    "@auth/core": "0.37.0",
-    "@convex-dev/auth": "^0.0.91",
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/postcss": "^4.2.2",
-    "convex": "^1.34.1",
+    "firebase": "12.12.0",
+    "firebase-admin": "13.8.0",
     "next": "^16.2.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -34,7 +32,6 @@
     "autoprefixer": "^10.4.27",
     "eslint": "^10.1.0",
     "eslint-config-next": "16.2.1",
-    "jose": "^6.2.2",
     "jsdom": "^29.0.1",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",

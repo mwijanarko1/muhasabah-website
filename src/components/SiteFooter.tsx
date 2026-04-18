@@ -10,13 +10,13 @@ export function SiteFooter() {
   const contactIsMail = Boolean(email);
 
   return (
-    <footer className="mt-auto border-t border-gray-200 bg-white/90 py-6 text-center text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800/90 dark:text-gray-300">
+    <footer className="mt-auto border-t-2 border-brand-periwinkle/10 bg-brand-white/95 py-8 text-center text-sm font-body text-gray-700 dark:border-gray-800 dark:bg-gray-900/95 dark:text-gray-300">
       <nav aria-label="Legal and contact">
-        <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+        <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
           <li>
             <Link
               href="/privacy"
-              className="text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400"
+              className="font-bold text-brand-accent underline-offset-4 hover:underline dark:text-brand-periwinkle"
             >
               Privacy
             </Link>
@@ -24,7 +24,7 @@ export function SiteFooter() {
           <li>
             <Link
               href="/terms"
-              className="text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400"
+              className="font-bold text-brand-accent underline-offset-4 hover:underline dark:text-brand-periwinkle"
             >
               Terms
             </Link>
@@ -32,13 +32,16 @@ export function SiteFooter() {
           <li>
             <a
               href={contactHref}
-              className="text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400"
+              className="font-bold text-brand-accent underline-offset-4 hover:underline dark:text-brand-periwinkle"
             >
               {contactIsMail ? "Contact" : "Contact / privacy requests"}
             </a>
           </li>
         </ul>
       </nav>
+      <p className="mt-4 font-mono-brand text-[10px] uppercase tracking-widest text-gray-400">
+        © 2024 Muhasabah
+      </p>
     </footer>
   );
 }

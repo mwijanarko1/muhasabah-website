@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useCallback, type Dispatch, type SetStateAction } from "react";
 import { JournalNotes } from "../JournalNotes";
 import {
   DoubleBezelRatingCard,
@@ -8,6 +8,7 @@ import {
 } from "../rating-ui";
 import { SlideShell } from "../SlideShell";
 import type { EntryState } from "../types";
+import { useDeferredRangeCommit } from "../useDeferredRangeCommit";
 
 type Props = {
   form: EntryState;
@@ -15,6 +16,21 @@ type Props = {
 };
 
 export function TongueSlide({ form, setForm }: Props) {
+  const commitTongue = useCallback(
+    (n: number) =>
+      setForm((prev) =>
+        prev.tongueDistractions === n ? prev : { ...prev, tongueDistractions: n },
+      ),
+    [setForm],
+  );
+
+  const { value: v, handlers: rangeHandlers } = useDeferredRangeCommit(
+    form.tongueDistractions,
+    commitTongue,
+  );
+
+  const fillPct = ((v + 20) / 40) * 100;
+
   return (
     <SlideShell
       step={6}
@@ -27,27 +43,27 @@ export function TongueSlide({ form, setForm }: Props) {
           description="Gossip, argument, idle talk vs. purposeful, kind, or silent speech."
           trailing={
             <div
-              className={`flex min-w-[5.25rem] shrink-0 flex-col items-center justify-center rounded-2xl px-4 py-3 transition-all duration-300 ${
-                form.tongueDistractions < 0
+              className={`flex min-w-[5.25rem] shrink-0 flex-col items-center justify-center rounded-2xl px-4 py-3 shadow-sm transition-all duration-300 ${
+                v < 0
                   ? "bg-rose-50 dark:bg-rose-950/30"
-                  : form.tongueDistractions > 0
-                    ? "bg-emerald-50 dark:bg-emerald-950/30"
-                    : "bg-gray-50 dark:bg-gray-800/50"
+                  : v > 0
+                    ? "bg-brand-mint dark:bg-brand-accent/10"
+                    : "bg-brand-alice/50 dark:bg-gray-800/50"
               }`}
             >
               <span
-                className={`inline-block min-w-[3ch] text-center text-3xl font-bold tabular-nums transition-colors duration-300 ${
-                  form.tongueDistractions < 0
+                className={`inline-block min-w-[3ch] font-mono-brand text-center text-3xl font-bold tabular-nums transition-colors duration-300 ${
+                  v < 0
                     ? "text-rose-500 dark:text-rose-400"
-                    : form.tongueDistractions > 0
-                      ? "text-emerald-600 dark:text-emerald-400"
+                    : v > 0
+                      ? "text-brand-accent dark:text-brand-periwinkle"
                       : "text-gray-500 dark:text-gray-400"
                 }`}
               >
-                {form.tongueDistractions > 0 ? "+" : ""}
-                {form.tongueDistractions}
+                {v > 0 ? "+" : ""}
+                {v}
               </span>
-              <span className="w-full whitespace-nowrap text-center text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              <span className="w-full font-mono-brand whitespace-nowrap text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 / ±20
               </span>
             </div>
@@ -63,22 +79,9 @@ export function TongueSlide({ form, setForm }: Props) {
         <div className="relative mb-4">
           <div className="absolute top-1/2 h-3 w-full -translate-y-1/2 rounded-full bg-gradient-to-r from-rose-200 via-[#E5ECF4] to-emerald-200 dark:from-rose-900/40 dark:via-gray-700 dark:to-emerald-900/40" />
 
-          <div className="absolute left-1/2 top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400 dark:bg-gray-500" />
-
           <div
-            className={`absolute top-1/2 h-3 -translate-y-1/2 rounded-full transition-all duration-150 ${
-              form.tongueDistractions < 0
-                ? "right-1/2 bg-gradient-to-l from-rose-400 to-rose-500"
-                : form.tongueDistractions > 0
-                  ? "left-1/2 bg-gradient-to-r from-emerald-400 to-emerald-500"
-                  : "hidden"
-            }`}
-            style={{
-              width:
-                form.tongueDistractions !== 0
-                  ? `${(Math.abs(form.tongueDistractions) / 20) * 50}%`
-                  : "0%",
-            }}
+            className="absolute left-0 top-1/2 h-3 -translate-y-1/2 rounded-full bg-gradient-to-r from-rose-400 to-emerald-500"
+            style={{ width: `${fillPct}%` }}
           />
 
           <input
@@ -86,11 +89,10 @@ export function TongueSlide({ form, setForm }: Props) {
             min={-20}
             max={20}
             step={1}
-            value={form.tongueDistractions}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, tongueDistractions: e.target.valueAsNumber }))
-            }
+            value={v}
             className="relative z-10 h-12 w-full cursor-pointer appearance-none bg-transparent focus:outline-none"
+            aria-label="Speech and restraint score"
+            {...rangeHandlers}
           />
 
           <style jsx>{`
@@ -100,7 +102,7 @@ export function TongueSlide({ form, setForm }: Props) {
               width: 28px;
               height: 28px;
               border-radius: 50%;
-              background: linear-gradient(135deg, #8a4fff 0%, #c3bef7 100%);
+              background: var(--color-brand-accent);
               cursor: pointer;
               box-shadow: 0 4px 14px rgba(138, 79, 255, 0.4);
               border: 3px solid white;
@@ -116,7 +118,7 @@ export function TongueSlide({ form, setForm }: Props) {
               width: 28px;
               height: 28px;
               border-radius: 50%;
-              background: linear-gradient(135deg, #8a4fff 0%, #c3bef7 100%);
+              background: var(--color-brand-accent);
               cursor: pointer;
               box-shadow: 0 4px 14px rgba(138, 79, 255, 0.4);
               border: 3px solid white;

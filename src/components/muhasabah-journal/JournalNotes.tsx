@@ -19,11 +19,11 @@ export function JournalNotes({
 
   return (
     <div className="relative">
-      <div className="rounded-[1.5rem] bg-gray-50/50 p-1 dark:bg-gray-800/30">
-        <div className="relative rounded-[calc(1.5rem-0.25rem)] bg-white p-5 dark:bg-[#231d2e]">
+      <div className="rounded-[1.5rem] bg-brand-alice/50 p-1 dark:bg-gray-800/30">
+        <div className="relative rounded-[calc(1.5rem-0.25rem)] bg-brand-white p-5 dark:bg-[#1a1423]">
           <label htmlFor={id} className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
             <svg
-              className="h-4 w-4 shrink-0 text-[#8A4FFF]"
+              className="h-4 w-4 shrink-0 text-brand-accent"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -56,7 +56,7 @@ export function JournalNotes({
             placeholder={placeholder}
             rows={rows}
             maxLength={500}
-            className="w-full resize-none rounded-xl border-0 bg-gray-50 p-4 text-[15px] leading-relaxed text-gray-800 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8A4FFF]/30 dark:bg-gray-900/50 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:bg-gray-900/80"
+            className="w-full resize-none rounded-xl border-0 bg-brand-alice/30 p-4 text-[15px] leading-relaxed text-brand-ink placeholder:text-gray-400 focus:bg-brand-white focus:outline-none focus:ring-4 focus:ring-brand-accent/20 dark:bg-gray-950/50 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:bg-gray-950/80"
             style={{ fontFamily: "var(--font-body)" }}
           />
           <div className="mt-2 flex justify-end">

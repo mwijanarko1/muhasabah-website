@@ -1,9 +1,7 @@
-import { v } from "convex/values";
-
 export const PRAYER_KEYS = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
 export type PrayerKey = (typeof PRAYER_KEYS)[number];
 
-/** When true, that salah has not entered yet (e.g. journaling before Maghrib) — excluded from prayer subtotal. */
+/** When true, that salah has not entered yet, so it is excluded from prayer subtotal. */
 export type PrayerNotYetTime = Record<PrayerKey, boolean>;
 
 export const defaultPrayerNotYetTime: PrayerNotYetTime = {
@@ -27,27 +25,9 @@ export function normalizePrayerNotYetTime(
   };
 }
 
-export const prayerNotYetTimeValidator = v.object({
-  fajr: v.boolean(),
-  dhuhr: v.boolean(),
-  asr: v.boolean(),
-  maghrib: v.boolean(),
-  isha: v.boolean(),
-});
-
-export const dateKeyValidator = v.string();
-
 export function isValidDateKey(dateKey: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(dateKey);
 }
-
-export const prayerScores = v.object({
-  fajr: v.union(v.literal(0), v.literal(1), v.literal(2)),
-  dhuhr: v.union(v.literal(0), v.literal(1), v.literal(2)),
-  asr: v.union(v.literal(0), v.literal(1), v.literal(2)),
-  maghrib: v.union(v.literal(0), v.literal(1), v.literal(2)),
-  isha: v.union(v.literal(0), v.literal(1), v.literal(2)),
-});
 
 export function prayerApplicableMaxPoints(notYet: PrayerNotYetTime): number {
   let max = 0;
@@ -103,7 +83,7 @@ type Prayer012 = {
   isha: 0 | 1 | 2;
 };
 
-/** Forces stored scores to 0 for prayers marked not-yet (server-side consistency). */
+/** Forces stored scores to 0 for prayers marked not-yet for server-side consistency. */
 export function sanitizePrayersForNotYet(prayers: Prayer012, notYet: PrayerNotYetTime): Prayer012 {
   const out = { ...prayers };
   for (const key of PRAYER_KEYS) {
@@ -116,7 +96,6 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
-/** Max length per optional note field (server-side cap). */
 export const NOTE_FIELD_MAX_CHARS = 5000;
 
 export type NotesFields = {
@@ -145,11 +124,11 @@ export function truncateNotes(notes: NotesFields | undefined): NotesFields | und
     "tongue",
     "heart",
   ];
-  for (const k of keys) {
-    const v = notes[k];
-    if (v === undefined) continue;
-    const t = truncateNoteField(v);
-    if (t !== undefined) out[k] = t;
+  for (const key of keys) {
+    const value = notes[key];
+    if (value === undefined) continue;
+    const truncated = truncateNoteField(value);
+    if (truncated !== undefined) out[key] = truncated;
   }
   return Object.keys(out).length > 0 ? out : undefined;
 }
@@ -193,16 +172,18 @@ export function validateEntryScores(args: {
   if (!Number.isInteger(ibadat)) return { valid: false, error: "ibadat must be an integer" };
   if (!Number.isInteger(kindness)) return { valid: false, error: "kindness must be an integer" };
   if (!Number.isInteger(learning)) return { valid: false, error: "learning must be an integer" };
-  if (!Number.isInteger(tongueDistractions))
+  if (!Number.isInteger(tongueDistractions)) {
     return { valid: false, error: "tongueDistractions must be an integer" };
+  }
   if (!Number.isInteger(heart)) return { valid: false, error: "heart must be an integer" };
 
   if (dhikrQuran < 0 || dhikrQuran > 10) return { valid: false, error: "dhikrQuran must be 0-10" };
   if (ibadat < 0 || ibadat > 10) return { valid: false, error: "ibadat must be 0-10" };
   if (kindness < 0 || kindness > 20) return { valid: false, error: "kindness must be 0-20" };
   if (learning < 0 || learning > 10) return { valid: false, error: "learning must be 0-10" };
-  if (tongueDistractions < -20 || tongueDistractions > 20)
+  if (tongueDistractions < -20 || tongueDistractions > 20) {
     return { valid: false, error: "tongueDistractions must be -20 to 20" };
+  }
   if (heart < 0 || heart > 20) return { valid: false, error: "heart must be 0-20" };
 
   const maxPrayerPoints = prayerApplicableMaxPoints(prayerNotYetTime);
@@ -218,10 +199,7 @@ export function validateEntryScores(args: {
     prayerNotYetTime,
   );
   if (total < -20 || total > maxTotalAllowed) {
-    return {
-      valid: false,
-      error: `Total ${total} out of bounds [-20, ${maxTotalAllowed}]`,
-    };
+    return { valid: false, error: `Total score must be between -20 and ${maxTotalAllowed}` };
   }
 
   return { valid: true };

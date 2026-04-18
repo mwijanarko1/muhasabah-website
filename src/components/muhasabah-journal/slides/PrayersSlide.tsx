@@ -1,4 +1,4 @@
-import type { PrayerNotYetTime } from "../../../../convex/helpers";
+import type { PrayerNotYetTime } from "@/lib/muhasabahScoring";
 import { PRAYER_ICONS } from "../constants";
 import { SlideShell } from "../SlideShell";
 import type { PrayerScores } from "../types";
@@ -46,18 +46,18 @@ export function PrayersSlide({
                         group relative overflow-hidden rounded-3xl
                         border transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]
                         ${notYet
-                  ? "border-[#C3BEF7]/40 bg-[#E5ECF4]/50 dark:border-[#C3BEF7]/20 dark:bg-[#1a1a2e]/50"
-                  : "border-[#8A4FFF]/20 bg-white dark:border-[#8A4FFF]/30 dark:bg-[#1a1a2e]/80"
+                  ? "border-brand-periwinkle/30 bg-brand-alice/40 dark:border-brand-periwinkle/20 dark:bg-gray-900/40"
+                  : "border-brand-accent/20 bg-brand-white dark:border-brand-accent/30 dark:bg-gray-900/80"
                 }
-                        ${notYet ? "shadow-none" : "shadow-[0_4px_20px_-8px_rgba(138,79,255,0.15)] dark:shadow-[0_4px_20px_-8px_rgba(138,79,255,0.1)]"}
+                        ${notYet ? "shadow-none" : "shadow-[0_8px_32px_-12px_rgba(138,79,255,0.12)] dark:shadow-[0_8px_32px_-12px_rgba(0,0,0,0.3)]"}
                       `}
             >
               <div
                 className={`
                           absolute inset-0 opacity-0 transition-opacity duration-500
                           ${!notYet ? "group-hover:opacity-100" : ""}
-                          bg-gradient-to-br from-[#8A4FFF]/5 via-transparent to-[#C3BEF7]/5
-                          dark:from-[#8A4FFF]/10 dark:to-[#C3BEF7]/5
+                          bg-gradient-to-br from-brand-accent/5 via-transparent to-brand-periwinkle/5
+                          dark:from-brand-accent/10 dark:to-brand-periwinkle/5
                         `}
               />
 
@@ -85,8 +85,7 @@ export function PrayersSlide({
                       />
                     </div>
                     <h3
-                      className="text-lg font-semibold leading-tight text-gray-900 dark:text-white"
-                      style={{ fontFamily: "var(--font-display)" }}
+                      className="font-display text-lg font-bold leading-tight text-brand-ink dark:text-brand-white"
                     >
                       {label}
                     </h3>
@@ -128,8 +127,8 @@ export function PrayersSlide({
                                   disabled:cursor-not-allowed disabled:opacity-30
                                   active:scale-[0.96]
                                   ${isSelected
-                            ? "bg-[#8A4FFF] text-white shadow-lg shadow-[#8A4FFF]/30"
-                            : "bg-[#E5ECF4]/60 text-gray-700 hover:bg-[#E5ECF4] dark:bg-[#2a2a3e]/60 dark:text-gray-300 dark:hover:bg-[#2a2a3e]"
+                            ? "bg-brand-accent text-brand-white shadow-lg shadow-brand-accent/30"
+                            : "bg-brand-alice/60 text-gray-700 hover:bg-brand-alice dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800"
                           }
                                 `}
                         style={{ fontFamily: "var(--font-body)" }}

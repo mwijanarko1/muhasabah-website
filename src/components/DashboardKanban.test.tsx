@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { DashboardKanban, type DashboardStatStrip } from "./DashboardKanban";
 import type { ActivityDayModel, CategoryCardModel } from "@/lib/dashboardStats";
 
@@ -69,7 +69,7 @@ describe("DashboardKanban", () => {
     expect(edit).toHaveAttribute("href", "/today?edit=1");
   });
 
-  it("does not show a dashboard Google sign-in prompt", () => {
+  it("does not show a Google sync prompt on the authenticated dashboard", () => {
     render(
       <DashboardKanban
         statStrip={statStrip}
@@ -81,6 +81,25 @@ describe("DashboardKanban", () => {
 
     expect(screen.queryByText(/to sync streaks and history/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /continue with google/i })).not.toBeInTheDocument();
+  });
+
+  it("shows a profile menu with sign out when a profile action is provided", () => {
+    const onSignOut = vi.fn();
+
+    render(
+      <DashboardKanban
+        statStrip={statStrip}
+        cards={cards}
+        activityDays={activityDays}
+        hasCompletedToday={true}
+        profileMenu={{ onSignOut }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /profile/i }));
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    expect(onSignOut).toHaveBeenCalledTimes(1);
   });
 
   it("does not render score cards when no saved entry is available", () => {

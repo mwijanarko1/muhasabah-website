@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  isLocalSessionCompleteForDate,
   loadLocalCompletedDateKeys,
+  loadAllDrafts,
+  resetLocalSessionForDate,
   saveDraftForDateKey,
   setLocalSessionCompleteForDate,
   type LocalDraftShape,
@@ -48,5 +51,18 @@ describe("loadLocalCompletedDateKeys", () => {
     setLocalSessionCompleteForDate("2026-04-14");
 
     expect(loadLocalCompletedDateKeys()).toEqual(["2026-04-14"]);
+  });
+
+  it("resets one local session without clearing other days", () => {
+    saveDraftForDateKey("2026-04-13", draft);
+    saveDraftForDateKey("2026-04-14", draft);
+    setLocalSessionCompleteForDate("2026-04-13");
+    setLocalSessionCompleteForDate("2026-04-14");
+
+    resetLocalSessionForDate("2026-04-14");
+
+    expect(loadAllDrafts()).toEqual({ "2026-04-13": draft });
+    expect(isLocalSessionCompleteForDate("2026-04-13")).toBe(true);
+    expect(isLocalSessionCompleteForDate("2026-04-14")).toBe(false);
   });
 });

@@ -8,7 +8,7 @@ import {
   truncateNotes,
   NOTE_FIELD_MAX_CHARS,
   normalizePrayerNotYetTime,
-} from "../../convex/helpers";
+} from "@/lib/muhasabahScoring";
 
 describe("Muhasabah helpers", () => {
   describe("prayerSum", () => {

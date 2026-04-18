@@ -1,4 +1,4 @@
-import type { PrayerNotYetTime } from "../../../convex/helpers";
+import type { PrayerNotYetTime } from "@/lib/muhasabahScoring";
 
 export type PrayerScores = {
   fajr: number;

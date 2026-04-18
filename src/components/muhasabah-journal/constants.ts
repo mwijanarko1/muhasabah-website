@@ -5,7 +5,7 @@ import {
   SunDim,
   SunHorizon,
 } from "@phosphor-icons/react";
-import { defaultPrayerNotYetTime } from "../../../convex/helpers";
+import { defaultPrayerNotYetTime } from "@/lib/muhasabahScoring";
 import type { EntryState } from "./types";
 
 /** 0–6 = seven sections, 7 = congratulations / next steps */

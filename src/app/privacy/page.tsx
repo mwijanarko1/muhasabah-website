@@ -46,11 +46,11 @@ export default function PrivacyPage() {
             <li>
               <strong>Account data:</strong> When you sign in with Google, we receive identifiers
               from your Google account (such as your Google user ID and email address) through our
-              authentication provider, processed by Convex Auth.
+              authentication provider, processed by Firebase Authentication.
             </li>
             <li>
               <strong>Journal data:</strong> Content you enter in the app (scores, notes, optional
-              text, and your selected calendar day) is stored in our database on Convex.
+              text, and your selected calendar day) is stored in Firestore.
             </li>
             <li>
               <strong>Technical data:</strong> Your browser may send a timezone preference; we may
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
           </h2>
           <p>
             We use third-party services that process data on our behalf, including:{" "}
-            <strong>Convex</strong> (hosting, database, and authentication infrastructure) and{" "}
+            <strong>Firebase</strong> (authentication and database infrastructure) and{" "}
             <strong>Google</strong> (sign-in). Their use of data is governed by their respective
             terms and privacy policies.
           </p>

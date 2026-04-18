@@ -56,6 +56,17 @@ export function saveDraftForDateKey(dateKey: string, draft: LocalDraftShape): vo
   }
 }
 
+export function clearDraftForDateKey(dateKey: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const all = loadAllDrafts();
+    delete all[dateKey];
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(all));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
 export function isLocalSessionCompleteForDate(dateKey: string): boolean {
   if (typeof window === "undefined") return false;
   try {
@@ -88,4 +99,18 @@ export function setLocalSessionCompleteForDate(dateKey: string): void {
   } catch {
     // ignore
   }
+}
+
+export function clearLocalSessionCompleteForDate(dateKey: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(`${SESSION_DONE_PREFIX}${dateKey}`);
+  } catch {
+    // ignore
+  }
+}
+
+export function resetLocalSessionForDate(dateKey: string): void {
+  clearDraftForDateKey(dateKey);
+  clearLocalSessionCompleteForDate(dateKey);
 }

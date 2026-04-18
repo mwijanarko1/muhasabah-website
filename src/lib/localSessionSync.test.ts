@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultPrayerNotYetTime } from "../../convex/helpers";
+import { defaultPrayerNotYetTime } from "@/lib/muhasabahScoring";
 import { buildLocalDraftUpsertArgs } from "./localSessionSync";
 import type { LocalDraftShape } from "./muhasabahLocalDraft";
 
@@ -24,7 +24,7 @@ const draft: LocalDraftShape = {
 };
 
 describe("buildLocalDraftUpsertArgs", () => {
-  it("builds Convex upsert args from a completed anonymous local draft", () => {
+  it("builds cloud upsert args from a completed anonymous local draft", () => {
     expect(buildLocalDraftUpsertArgs("2026-04-15", draft)).toEqual({
       dateKey: "2026-04-15",
       prayers: {

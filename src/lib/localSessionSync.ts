@@ -1,4 +1,4 @@
-import { clamp, normalizePrayerNotYetTime, type PrayerNotYetTime } from "../../convex/helpers";
+import { clamp, normalizePrayerNotYetTime, type PrayerNotYetTime } from "@/lib/muhasabahScoring";
 import type { LocalDraftShape } from "./muhasabahLocalDraft";
 
 type PrayerScore = 0 | 1 | 2;

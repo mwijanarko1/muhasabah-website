@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useCallback, type Dispatch, type SetStateAction } from "react";
 import { JournalNotes } from "../JournalNotes";
 import {
   DoubleBezelRatingCard,
@@ -8,6 +8,7 @@ import {
 } from "../rating-ui";
 import { SlideShell } from "../SlideShell";
 import type { EntryState } from "../types";
+import { useDeferredRangeCommit } from "../useDeferredRangeCommit";
 
 type Props = {
   form: EntryState;
@@ -15,7 +16,16 @@ type Props = {
 };
 
 export function KindnessSlide({ form, setForm }: Props) {
-  const k = form.kindness;
+  const commitKindness = useCallback(
+    (n: number) =>
+      setForm((prev) => (prev.kindness === n ? prev : { ...prev, kindness: n })),
+    [setForm],
+  );
+
+  const { value: k, handlers: rangeHandlers } = useDeferredRangeCommit(
+    form.kindness,
+    commitKindness,
+  );
   const scoreBg =
     k < 7
       ? "bg-rose-50 dark:bg-rose-950/30"
@@ -41,14 +51,14 @@ export function KindnessSlide({ form, setForm }: Props) {
           description="How you treated others today (patience, forgiveness, charity, good character)."
           trailing={
             <div
-              className={`flex min-w-[4.75rem] shrink-0 flex-col items-center justify-center rounded-2xl px-4 py-3 transition-all duration-300 ${scoreBg}`}
+              className={`flex min-w-[4.75rem] shrink-0 flex-col items-center justify-center rounded-2xl px-4 py-3 shadow-sm transition-all duration-300 ${scoreBg}`}
             >
               <span
-                className={`inline-block min-w-[2ch] text-center text-3xl font-bold tabular-nums transition-colors duration-300 ${scoreText}`}
+                className={`inline-block min-w-[2ch] font-mono-brand text-center text-3xl font-bold tabular-nums transition-colors duration-300 ${scoreText}`}
               >
                 {k}
               </span>
-              <span className="inline-block min-w-[2ch] text-center text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              <span className="inline-block min-w-[2ch] font-mono-brand text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 / 20
               </span>
             </div>
@@ -65,7 +75,7 @@ export function KindnessSlide({ form, setForm }: Props) {
           <div className="absolute top-1/2 h-3 w-full -translate-y-1/2 rounded-full bg-gradient-to-r from-rose-200 via-[#E5ECF4] to-emerald-200 dark:from-rose-900/40 dark:via-gray-700 dark:to-emerald-900/40" />
 
           <div
-            className="absolute left-0 top-1/2 h-3 -translate-y-1/2 rounded-full bg-gradient-to-r from-rose-400 to-emerald-500 transition-all duration-150 ease-out"
+            className="absolute left-0 top-1/2 h-3 -translate-y-1/2 rounded-full bg-gradient-to-r from-rose-400 to-emerald-500"
             style={{ width: `${(k / 20) * 100}%` }}
           />
 
@@ -75,11 +85,9 @@ export function KindnessSlide({ form, setForm }: Props) {
             max={20}
             step={1}
             value={k}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, kindness: e.target.valueAsNumber }))
-            }
             className="relative z-10 h-12 w-full cursor-pointer appearance-none bg-transparent focus:outline-none"
             aria-label="Kindness score"
+            {...rangeHandlers}
           />
 
           <style jsx>{`
@@ -89,7 +97,7 @@ export function KindnessSlide({ form, setForm }: Props) {
               width: 28px;
               height: 28px;
               border-radius: 50%;
-              background: linear-gradient(135deg, #8a4fff 0%, #c3bef7 100%);
+              background: var(--color-brand-accent);
               cursor: pointer;
               box-shadow: 0 4px 14px rgba(138, 79, 255, 0.4);
               border: 3px solid white;
@@ -105,7 +113,7 @@ export function KindnessSlide({ form, setForm }: Props) {
               width: 28px;
               height: 28px;
               border-radius: 50%;
-              background: linear-gradient(135deg, #8a4fff 0%, #c3bef7 100%);
+              background: var(--color-brand-accent);
               cursor: pointer;
               box-shadow: 0 4px 14px rgba(138, 79, 255, 0.4);
               border: 3px solid white;

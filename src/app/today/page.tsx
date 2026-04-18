@@ -2,18 +2,18 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useConvexAuth, useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { useFirebaseAuth } from "@/components/FirebaseAuthProvider";
 import { MuhasabahJournal } from "@/components/MuhasabahJournal";
-import { getBrowserTodayDateKey } from "@/lib/todayDateKey";
 import { isLocalSessionCompleteForDate } from "@/lib/muhasabahLocalDraft";
+import { getBrowserTodayDateKey } from "@/lib/todayDateKey";
+import { useCompletedSession, useUserSettings } from "@/lib/useMuhasabahFirebase";
 
 function LoadingScreen() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-brand-white dark:bg-gray-950">
       <div className="text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-brand-accent border-t-transparent shadow-sm"></div>
+        <p className="mt-4 font-display font-medium text-brand-ink dark:text-brand-mint">Loading...</p>
       </div>
     </div>
   );
@@ -28,53 +28,64 @@ function TodayPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const allowReplayEdit = parseAllowReplayEdit(searchParams);
-  const { isLoading, isAuthenticated } = useConvexAuth();
+  const { authToken, isLoading, isAuthenticated } = useFirebaseAuth();
   const [todayKey, setTodayKey] = useState<string | null>(null);
 
   useEffect(() => {
     setTodayKey(getBrowserTodayDateKey());
   }, []);
 
-  const completedSignedIn = useQuery(
-    api.muhasabah.hasCompletedSessionForDate,
-    isLoading || !isAuthenticated || !todayKey ? "skip" : { dateKey: todayKey },
+  const completedSignedIn = useCompletedSession(
+    todayKey,
+    !isLoading && isAuthenticated && todayKey !== null,
   );
 
-  const settings = useQuery(
-    api.muhasabah.getUserSettings,
-    isLoading || !isAuthenticated ? "skip" : {},
-  );
+  const settings = useUserSettings(!isLoading && isAuthenticated);
+  const hasCompletedLocalSession = todayKey
+    ? isLocalSessionCompleteForDate(todayKey)
+    : false;
 
   useEffect(() => {
-    if (!todayKey || isLoading) return;
+    if (!todayKey || isLoading || (authToken !== null && !isAuthenticated)) return;
     if (allowReplayEdit) return;
 
     if (isAuthenticated) {
+      if (hasCompletedLocalSession) {
+        router.replace("/dashboard");
+        return;
+      }
       if (completedSignedIn === undefined) return;
       if (completedSignedIn) {
         router.replace("/dashboard");
       }
-      return;
     }
+  }, [
+    todayKey,
+    isLoading,
+    isAuthenticated,
+    authToken,
+    hasCompletedLocalSession,
+    completedSignedIn,
+    router,
+    allowReplayEdit,
+  ]);
 
-    if (isLocalSessionCompleteForDate(todayKey)) {
-      router.replace("/dashboard");
-    }
-  }, [todayKey, isLoading, isAuthenticated, completedSignedIn, router, allowReplayEdit]);
-
-  if (!todayKey || isLoading) {
+  if (!todayKey || isLoading || (authToken !== null && !isAuthenticated)) {
     return <LoadingScreen />;
   }
 
   if (isAuthenticated) {
-    if (completedSignedIn === undefined) return <LoadingScreen />;
-    if (completedSignedIn && !allowReplayEdit) return <LoadingScreen />;
-    if (settings === undefined) return <LoadingScreen />;
-    return <MuhasabahJournal variant="signedIn" settings={settings} />;
-  }
-
-  if (isLocalSessionCompleteForDate(todayKey) && !allowReplayEdit) {
-    return <LoadingScreen />;
+    if (!allowReplayEdit) {
+      if (hasCompletedLocalSession) return <LoadingScreen />;
+      if (completedSignedIn === undefined) return <LoadingScreen />;
+      if (completedSignedIn) return <LoadingScreen />;
+      if (settings === undefined) return <LoadingScreen />;
+      return <MuhasabahJournal variant="signedIn" settings={settings} />;
+    }
+    // Edit mode: render journal immediately without waiting for queries to settle.
+    // This prevents an unmount/remount cycle (via LoadingScreen) that would reset the
+    // slide position and briefly show the anonymous OutroSlide to signed-in users.
+    return <MuhasabahJournal variant="signedIn" settings={settings ?? null} />;
   }
 
   return <MuhasabahJournal variant="anonymous" />;

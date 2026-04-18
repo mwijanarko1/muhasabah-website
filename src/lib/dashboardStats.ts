@@ -4,7 +4,7 @@ import {
   prayerApplicableMaxPoints,
   prayerSum,
   type PrayerNotYetTime,
-} from "../../convex/helpers";
+} from "@/lib/muhasabahScoring";
 
 /** Same shape as a stored muhasabah row’s score fields. */
 export type EntryScores = {
@@ -56,7 +56,8 @@ export type DashboardStatStripModel = {
   dataSourceLabel: string;
 };
 
-function addDaysLocal(dateKey: string, delta: number): string {
+/** Calendar math on `YYYY-MM-DD` keys (local date, no timezone shift). */
+export function addDaysToDateKey(dateKey: string, delta: number): string {
   const [y, m, d] = dateKey.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
   dt.setDate(dt.getDate() + delta);
@@ -191,7 +192,7 @@ export function buildActivityDays(
   const days: ActivityDayModel[] = [];
 
   for (let i = dayCount - 1; i >= 0; i--) {
-    const dateKey = addDaysLocal(todayKey, -i);
+    const dateKey = addDaysToDateKey(todayKey, -i);
     const entry = entriesByDate.get(dateKey);
     const total = entry ? totalForEntry(entry) : null;
     days.push({
@@ -211,7 +212,7 @@ export function computeCurrentStreak(todayKey: string, dateKeys: Set<string>): n
   for (;;) {
     if (!dateKeys.has(key)) break;
     streak += 1;
-    key = addDaysLocal(key, -1);
+    key = addDaysToDateKey(key, -1);
   }
   return streak;
 }
@@ -224,7 +225,7 @@ export function averageLastNDays(
   let sum = 0;
   let daysWithData = 0;
   for (let i = 0; i < windowDays; i++) {
-    const key = addDaysLocal(todayKey, -i);
+    const key = addDaysToDateKey(todayKey, -i);
     const e = entriesByDate.get(key);
     if (e) {
       sum += totalForEntry(e);

@@ -15,19 +15,19 @@ export function SlideShell({
 }) {
   return (
     <article className="pb-6 pt-2">
-      <p className="text-xs font-semibold uppercase tracking-wider text-[#8A4FFF] dark:text-[#C3BEF7]">
+      <p className="font-mono-brand text-[10px] font-bold uppercase tracking-widest text-brand-accent dark:text-brand-periwinkle">
         Step {step} of 7
       </p>
-      <div className="mt-1 flex items-baseline gap-2">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
+      <div className="mt-2 flex items-baseline gap-2">
+        <h2 className="font-display text-2xl font-bold tracking-tight text-brand-ink dark:text-brand-white">{title}</h2>
         {subtitle && (
-          <span className="text-lg font-medium text-[#8A4FFF]/70 dark:text-[#C3BEF7]/60">
+          <span className="font-display text-lg font-medium text-brand-accent/60 dark:text-brand-periwinkle/50">
             {subtitle}
           </span>
         )}
       </div>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{hint}</p>
-      <div className="mt-6 space-y-4">{children}</div>
+      <p className="font-body mt-3 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{hint}</p>
+      <div className="mt-8 space-y-6">{children}</div>
     </article>
   );
 }
