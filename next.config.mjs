@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV === "development";
+const firebaseAuthDomain =
+  process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? "muhasabah-c2776.firebaseapp.com";
 
 const connectSrcProduction = [
   "'self'",
@@ -13,6 +15,14 @@ const connectSrcProduction = [
   .filter(Boolean)
   .join(" ");
 
+const frameSrcProduction = [
+  "'self'",
+  `https://${firebaseAuthDomain}`,
+  "https://accounts.google.com",
+]
+  .filter(Boolean)
+  .join(" ");
+
 export function buildProductionCsp() {
   return [
     "default-src 'self'",
@@ -21,6 +31,7 @@ export function buildProductionCsp() {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https:",
     `connect-src ${connectSrcProduction}`,
+    `frame-src ${frameSrcProduction}`,
     "object-src 'none'",
     "base-uri 'none'",
     "frame-ancestors 'none'",
@@ -34,6 +45,7 @@ const nextConfig = {
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "X-Frame-Options", value: "DENY" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
     ];
 
     // Production-only HSTS (avoid sending on http://localhost).
