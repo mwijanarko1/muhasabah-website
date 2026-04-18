@@ -3,6 +3,7 @@ const isDev = process.env.NODE_ENV === "development";
 
 const connectSrcProduction = [
   "'self'",
+  "https://firebase.googleapis.com",
   "https://identitytoolkit.googleapis.com",
   "https://securetoken.googleapis.com",
   "https://firebaseinstallations.googleapis.com",
@@ -11,6 +12,20 @@ const connectSrcProduction = [
 ]
   .filter(Boolean)
   .join(" ");
+
+export function buildProductionCsp() {
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.googletagmanager.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data: https:",
+    `connect-src ${connectSrcProduction}`,
+    "object-src 'none'",
+    "base-uri 'none'",
+    "frame-ancestors 'none'",
+  ].join("; ");
+}
 
 const nextConfig = {
   reactStrictMode: true,
@@ -37,17 +52,7 @@ const nextConfig = {
 
     // Production: allow Next.js inline scripts (framework requirement in many setups)
     // and network access for Firebase Auth / Analytics.
-    const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data: https:",
-      `connect-src ${connectSrcProduction}`,
-      "object-src 'none'",
-      "base-uri 'none'",
-      "frame-ancestors 'none'",
-    ].join("; ");
+    const csp = buildProductionCsp();
 
     return [
       {
