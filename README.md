@@ -47,7 +47,7 @@ A Next.js 16 web app for recording daily Islamic muhasabah (self-reflection) sco
    ```
    Fill in the following in `.env.local`:
    - `NEXT_PUBLIC_APP_URL` — your site origin for metadata (local: `http://localhost:3000`)
-   - `NEXT_PUBLIC_FIREBASE_*` — Firebase web app config for browser auth and analytics
+   - `NEXT_PUBLIC_FIREBASE_*` — Firebase web app config for browser auth
    - `FIREBASE_PROJECT_ID` — Firebase project ID (`muhasabah-c2776`)
    - `FIREBASE_CLIENT_EMAIL` — service account client email for Firebase Admin
    - `FIREBASE_PRIVATE_KEY` — service account private key, with newlines escaped as `\n`

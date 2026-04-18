@@ -21,7 +21,7 @@ export async function PUT(request: Request) {
     return dataResponse(await upsertUserSettings(user.uid, payload.ianaTimezone));
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return errorResponse(new ApiError(422, "VALIDATION_ERROR", "Use a valid time zone."));
+      return errorResponse(new ApiError(422, "VALIDATION_ERROR", "Use a valid IANA time zone."));
     }
     return errorResponse(error);
   }

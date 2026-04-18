@@ -17,6 +17,14 @@ describe("production CSP", () => {
 
     expect(csp).toContain("frame-src 'self' https://muhasabah-c2776.firebaseapp.com");
   });
+
+  it("does not allow production eval or third-party tracker endpoints by default", () => {
+    const csp = buildProductionCsp();
+
+    expect(csp).not.toContain("'unsafe-eval'");
+    expect(csp).not.toContain("https://www.googletagmanager.com");
+    expect(csp).not.toContain("https://www.google-analytics.com");
+  });
 });
 
 describe("production security headers", () => {

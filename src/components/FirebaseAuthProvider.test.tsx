@@ -7,6 +7,7 @@ const POST_AUTH_REDIRECT_KEY = "muhasabah:postAuthRedirect";
 const mocks = vi.hoisted(() => ({
   authStateCallback: null as null | ((user: unknown) => void | Promise<void>),
   getRedirectResult: vi.fn(),
+  initializeFirebaseAnalytics: vi.fn().mockResolvedValue(null),
   replace: vi.fn(),
   signInWithPopup: vi.fn(),
   signInWithRedirect: vi.fn(),
@@ -39,7 +40,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/firebase/client", () => ({
   firebaseAuth: {},
-  initializeFirebaseAnalytics: vi.fn().mockResolvedValue(null),
+  initializeFirebaseAnalytics: mocks.initializeFirebaseAnalytics,
 }));
 
 vi.mock("firebase/auth", () => ({
@@ -79,6 +80,8 @@ describe("FirebaseAuthProvider", () => {
     mocks.authStateCallback = null;
     mocks.getRedirectResult.mockReset();
     mocks.getRedirectResult.mockResolvedValue(null);
+    mocks.initializeFirebaseAnalytics.mockReset();
+    mocks.initializeFirebaseAnalytics.mockResolvedValue(null);
     mocks.replace.mockReset();
     mocks.signInWithPopup.mockReset();
     mocks.signInWithRedirect.mockReset();
@@ -107,6 +110,20 @@ describe("FirebaseAuthProvider", () => {
     });
 
     expect(window.sessionStorage.getItem(POST_AUTH_REDIRECT_KEY)).toBeNull();
+  });
+
+  it("does not initialize non-essential Firebase Analytics before consent", async () => {
+    render(
+      <FirebaseAuthProvider>
+        <div>App</div>
+      </FirebaseAuthProvider>,
+    );
+
+    await act(async () => {
+      await mocks.authStateCallback?.(null);
+    });
+
+    expect(mocks.initializeFirebaseAnalytics).not.toHaveBeenCalled();
   });
 
   it("falls back to the locally stored dashboard destination after redirect sign-in", async () => {

@@ -20,6 +20,15 @@ export const notesSchema = z
   })
   .strict();
 
+function isValidIanaTimeZone(value: string): boolean {
+  try {
+    Intl.DateTimeFormat("en-US", { timeZone: value });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const entryPayloadSchema = z
   .object({
     prayers: z
@@ -53,7 +62,7 @@ export const entryPayloadSchema = z
 
 export const userSettingsPayloadSchema = z
   .object({
-    ianaTimezone: z.string().min(1).max(128),
+    ianaTimezone: z.string().min(1).max(128).refine(isValidIanaTimeZone),
   })
   .strict();
 

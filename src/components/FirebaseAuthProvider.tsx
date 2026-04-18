@@ -19,7 +19,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { firebaseAuth, initializeFirebaseAnalytics } from "@/lib/firebase/client";
+import { firebaseAuth } from "@/lib/firebase/client";
 
 const POST_AUTH_REDIRECT_KEY = "muhasabah:postAuthRedirect";
 
@@ -83,8 +83,6 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
     let isActive = true;
     let isResolvingStoredRedirect = readPostAuthRedirect() !== null;
     let latestAuthUser: User | null = null;
-
-    void initializeFirebaseAnalytics();
 
     async function applyAuthUser(nextUser: User | null, keepLoading = false) {
       const nextAuthToken = nextUser ? await nextUser.getIdToken() : null;

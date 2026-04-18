@@ -1,13 +1,26 @@
+import { z } from "zod";
 import { ApiError, dataResponse, errorResponse, requireFirebaseUser } from "@/lib/firebase/serverAuth";
 import { listRecent } from "@/lib/muhasabahRepository";
 
 export const runtime = "nodejs";
 
+const recentQueryParamKeys = new Set(["limit"]);
+const recentLimitSchema = z.coerce.number().int().min(1).max(100).default(30);
+
 function parseLimit(request: Request): number {
   const url = new URL(request.url);
-  const raw = Number(url.searchParams.get("limit") ?? 30);
-  if (!Number.isFinite(raw)) return 30;
-  return Math.min(100, Math.max(1, Math.floor(raw)));
+  for (const key of url.searchParams.keys()) {
+    if (!recentQueryParamKeys.has(key)) {
+      throw new ApiError(400, "VALIDATION_ERROR", "Use only supported query parameters.");
+    }
+  }
+
+  const limit = url.searchParams.get("limit");
+  const parsed = recentLimitSchema.safeParse(limit ?? undefined);
+  if (!parsed.success) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Use a limit from 1 to 100.");
+  }
+  return parsed.data;
 }
 
 export async function GET(request: Request) {
