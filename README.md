@@ -51,6 +51,7 @@ A Next.js 16 web app for recording daily Islamic muhasabah (self-reflection) sco
    - `FIREBASE_PROJECT_ID` — Firebase project ID (`muhasabah-c2776`)
    - `FIREBASE_CLIENT_EMAIL` — service account client email for Firebase Admin
    - `FIREBASE_PRIVATE_KEY` — service account private key, with newlines escaped as `\n`
+   - Or `FIREBASE_SERVICE_ACCOUNT_JSON` — the full Firebase service account JSON object
 
    Enable Google as a Firebase Authentication provider and add your app origin to the authorized domains in the Firebase console.
 
